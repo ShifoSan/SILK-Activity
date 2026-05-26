@@ -4,116 +4,367 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.I.L.K. Activity Test Shell</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1.0.0/dist/index.js"></script>
     <style>
+        /* PURE NATIVE STYLING MATRIX - BYPASSES DISCORD IFRAME BLOCKS */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
             background-color: #080C14;
             color: #E2E8F0;
             font-family: system-ui, -apple-system, sans-serif;
+            padding: 12px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            user-select: none;
         }
-        /* Custom scrollbar for mobile bento panels */
-        ::-webkit-scrollbar {
-            width: 4px;
+        
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111827;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #1E293B;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
         }
-        ::-webkit-scrollbar-track {
-            background: #0F172A;
+        h1 {
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #38BDF8;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 2px;
+        header p {
+            font-size: 10px;
+            color: #94A3B8;
+            font-weight: 500;
         }
+        .profile-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(30, 41, 59, 0.4);
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid #1E293B;
+        }
+        #username {
+            font-size: 12px;
+            font-weight: 600;
+            color: #CBD5E1;
+            font-family: monospace;
+        }
+        #avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: rgba(56, 189, 248, 0.2);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-bold: true;
+            color: #38BDF8;
+        }
+        #avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        /* CONTROLS & SEARCH */
+        .search-section {
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .side-toggles {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .toggle-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        #btn-side-A.active {
+            background-color: rgba(249, 115, 22, 0.2);
+            border-color: rgba(249, 115, 22, 0.5);
+            color: #FB923C;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        #btn-side-A.inactive {
+            background-color: #1E293B;
+            border-color: #334155;
+            color: #94A3B8;
+        }
+        #btn-side-B.active {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.5);
+            color: #34D399;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        #btn-side-B.inactive {
+            background-color: #1E293B;
+            border-color: #334155;
+            color: #94A3B8;
+        }
+        #search-input {
+            width: 100%;
+            background-color: #111827;
+            border: 1px solid #1E293B;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #F8FAFC;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #search-input:focus {
+            border-color: #38BDF8;
+        }
+        #autocomplete-box {
+            position: absolute;
+            left: 0;
+            right: 0;
+            margin-top: 4px;
+            background-color: #111827;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            max-height: 160px;
+            overflow-y: auto;
+            z-index: 50;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+        }
+        .autocomplete-item {
+            padding: 8px 12px;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+        .autocomplete-item:hover {
+            background-color: #1E293B;
+        }
+        .autocomplete-item span:last-child {
+            font-family: monospace;
+            color: #94A3B8;
+        }
+        .hidden { display: none !important; }
+
+        /* BENTO PANELS */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            flex-grow: 1;
+            margin-bottom: 12px;
+        }
+        @media (min-width: 768px) {
+            .grid-container { grid-template-columns: 1fr 1fr; }
+        }
+        .bento-card {
+            background-color: rgba(11, 19, 43, 0.6);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 160px;
+        }
+        .card-side-A { border: 1px solid rgba(249, 115, 22, 0.15); }
+        .card-side-B { border: 1px solid rgba(16, 185, 129, 0.15); }
+        
+        .card-title {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+        .title-A { color: #FB923C; }
+        .title-B { color: #34D399; }
+
+        .inventory-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 128px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .trade-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(17, 24, 39, 0.9);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #1E293B;
+        }
+        .item-details { display: flex; flex-direction: column; }
+        .item-name { font-size: 12px; font-weight: 500; }
+        .item-qty { color: #38BDF8; font-weight: bold; }
+        .item-subtext { font-size: 9px; color: #64748B; font-family: monospace; }
+        
+        .delete-btn {
+            color: rgba(239, 68, 68, 0.7);
+            background-color: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-btn:hover { color: #EF4444; }
+
+        /* LEDGER DISPLAY BOXES */
+        .ledger-box {
+            background-color: rgba(17, 24, 39, 0.8);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 10px;
+        }
+        .ledger-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+        .ledger-row:last-child { margin-bottom: 0; }
+        .ledger-label { font-family: system-ui, sans-serif; color: #94A3B8; }
+        .divider { border-top: 1px solid rgba(51, 65, 85, 0.5); my: 4px; margin: 4px 0; }
+
+        /* FOOTER DISPLAY ACCENTS */
+        footer {
+            background-color: #111827;
+            border: 1px solid #1E293B;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        #ratio-output {
+            color: #94A3B8;
+            font-family: monospace;
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+        #verdict-banner {
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* DYNAMIC FOOTER STATE INTERCHANGES */
+        .state-awaiting { color: #94A3B8; }
+        .state-win { color: #34D399; animation: pulse 2s infinite; }
+        .state-profit { color: #2DD4BF; }
+        .state-fair { color: #60A5FA; }
+        .state-loss { color: #F59E0B; }
+        .state-deficit { color: #F87171; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0F172A; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
     </style>
 </head>
-<body class="p-3 min-h-screen flex flex-col justify-between select-none">
+<body class="select-none">
 
-    <header class="flex justify-between items-center bg-[#111827] p-3 rounded-xl border border-[#1E293B] mb-3 shadow-md">
+    <header>
         <div>
-            <h1 class="text-md font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 uppercase">
-                ⚙️ S.I.L.K. Activity Tester
-            </h1>
-            <p class="text-[10px] text-slate-400 font-medium">aotrvalue.com Simulation Profile</p>
+            <h1>⚙️ S.I.L.K. Activity Tester</h1>
+            <p>aotrvalue.com Simulation Profile</p>
         </div>
-        <div class="flex items-center gap-2 bg-[#1E293B]/40 px-2.5 py-1 rounded-lg border border-slate-800">
-            <span id="username" class="text-xs font-semibold text-slate-300 font-mono">Test_Trader</span>
-            <div id="avatar" class="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-[10px] font-bold text-blue-400">🤖</div>
+        <div class="profile-badge">
+            <span id="username">Test_Trader</span>
+            <div id="avatar">🤖</div>
         </div>
     </header>
 
-    <section class="mb-3 relative">
-        <div class="flex gap-2 mb-2">
-            <button onclick="setTargetSide('A')" id="btn-side-A" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-orange-600/20 border border-orange-500/50 text-orange-400 shadow-lg">
-                📤 Add to Side A
-            </button>
-            <button onclick="setTargetSide('B')" id="btn-side-B" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-slate-800 border border-slate-700 text-slate-400">
-                📥 Add to Side B
-            </button>
+    <section class="search-section">
+        <div class="side-toggles">
+            <button onclick="setTargetSide('A')" id="btn-side-A" class="toggle-btn active">📤 Add to Side A</button>
+            <button onclick="setTargetSide('B')" id="btn-side-B" class="toggle-btn inactive">📥 Add to Side B</button>
         </div>
-        <div class="relative">
-            <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Type item name (e.g., Fritz, Kengo, Serum)..." 
-                   class="w-full bg-[#111827] border border-[#1E293B] rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-500 transition shadow-inner">
-            <div id="autocomplete-box" class="hidden absolute left-0 right-0 mt-1 bg-[#111827] border border-slate-800 rounded-xl max-h-40 overflow-y-auto z-50 shadow-2xl"></div>
+        <div style="position: relative;">
+            <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Type item name (e.g., Fritz, Kengo, Serum)...">
+            <div id="autocomplete-box" class="hidden"></div>
         </div>
     </section>
 
-    <main class="grid grid-cols-1 md:grid-cols-2 gap-3 flex-grow mb-3">
+    <main class="grid-container">
         
-        <div class="bg-[#0B132B]/60 rounded-xl p-3 border border-orange-950/40 flex flex-col justify-between min-h-[160px]">
+        <div class="bento-card card-side-A">
             <div>
-                <h2 class="text-orange-400 font-black uppercase tracking-widest text-[10px] mb-2 flex items-center gap-1">
-                    📤 Side A (Giving Inventory)
-                </h2>
-                <ul id="list-side-A" class="space-y-1.5 max-h-32 overflow-y-auto pr-1">
-                    </ul>
+                <h2 class="card-title title-A">📤 Side A (Giving Inventory)</h2>
+                <ul id="list-side-A" class="inventory-list"></ul>
             </div>
-            <div class="bg-[#111827]/80 p-2 rounded-lg border border-slate-800/60 mt-2 space-y-0.5 font-mono text-[10px]">
-                <div class="flex justify-between text-slate-300"><span>Total Value:</span> <span id="total-keys-A">🔑 0 Keys</span></div>
-                <div class="flex justify-between text-slate-400"><span></span> <span id="total-scrolls-A">📜 0.0 Scrolls</span></div>
-                <div class="flex justify-between text-slate-400"><span></span> <span id="total-viz-A">👺 0.00 Viz</span></div>
-                <div class="border-t border-slate-800/50 my-1"></div>
-                <div class="flex justify-between text-slate-400"><span>Inventory Tax:</span> <span id="tax-gems-A">💎 0 Gems</span></div>
-                <div class="flex justify-between text-slate-400"><span></span> <span id="tax-gold-A">🪙 0 Gold</span></div>
+            <div class="ledger-box">
+                <div class="ledger-row"><span class="ledger-label">Total Value:</span><span id="total-keys-A" style="color:#E2E8F0;">🔑 0 Keys</span></div>
+                <div class="ledger-row"><span></span><span id="total-scrolls-A" style="color:#94A3B8;">📜 0.0 Scrolls</span></div>
+                <div class="ledger-row"><span></span><span id="total-viz-A" style="color:#94A3B8;">👺 0.00 Viz</span></div>
+                <div class="divider"></div>
+                <div class="ledger-row"><span class="ledger-label">Inventory Tax:</span><span id="tax-gems-A" style="color:#94A3B8;">💎 0 Gems</span></div>
+                <div class="ledger-row"><span></span><span id="tax-gold-A" style="color:#94A3B8;">🪙 0 Gold</span></div>
             </div>
         </div>
 
-        <div class="bg-[#0B132B]/60 rounded-xl p-3 border border-emerald-950/40 flex flex-col justify-between min-h-[160px]">
+        <div class="bento-card card-side-B">
             <div>
-                <h2 class="text-emerald-400 font-black uppercase tracking-widest text-[10px] mb-2 flex items-center gap-1">
-                    📥 Side B (Getting Inventory)
-                </h2>
-                <ul id="list-side-B" class="space-y-1.5 max-h-32 overflow-y-auto pr-1">
-                    </ul>
+                <h2 class="card-title title-B">📥 Side B (Getting Inventory)</h2>
+                <ul id="list-side-B" class="inventory-list"></ul>
             </div>
-            <div class="bg-[#111827]/80 p-2 rounded-lg border border-slate-800/60 mt-2 space-y-0.5 font-mono text-[10px]">
-                <div class="flex justify-between text-slate-300"><span>Total Value:</span> <span id="total-keys-B">🔑 0 Keys</span></div>
-                <div class="flex justify-between text-slate-400"><span></span> <span id="total-scrolls-B">📜 0.0 Scrolls</span></div>
-                <div class="flex justify-between text-slate-400"><span></span> <span id="total-viz-B">👺 0.00 Viz</span></div>
-                <div class="border-t border-slate-800/50 my-1"></div>
-                <div class="flex justify-between text-slate-400"><span>Inventory Tax:</span> <span id="tax-gems-B">💎 0 Gems</span></div>
-                <div class="flex justify-between text-slate-400"><span></span> <span id="tax-gold-B">🪙 0 Gold</span></div>
+            <div class="ledger-box">
+                <div class="ledger-row"><span class="ledger-label">Total Value:</span><span id="total-keys-B" style="color:#E2E8F0;">🔑 0 Keys</span></div>
+                <div class="ledger-row"><span></span><span id="total-scrolls-B" style="color:#94A3B8;">📜 0.0 Scrolls</span></div>
+                <div class="ledger-row"><span></span><span id="total-viz-B" style="color:#94A3B8;">👺 0.00 Viz</span></div>
+                <div class="divider"></div>
+                <div class="ledger-row"><span class="ledger-label">Inventory Tax:</span><span id="tax-gems-B" style="color:#94A3B8;">💎 0 Gems</span></div>
+                <div class="ledger-row"><span></span><span id="tax-gold-B" style="color:#94A3B8;">🪙 0 Gold</span></div>
             </div>
         </div>
 
     </main>
 
-    <footer id="verdict-wrapper" class="bg-[#111827] border border-slate-800 rounded-xl p-3 text-center transition-all duration-300">
-        <div id="ratio-output" class="text-slate-400 font-mono text-[10px] mb-1">VALUE RATIO: 0.00</div>
-        <div id="verdict-banner" class="text-slate-300 font-black tracking-widest text-xs uppercase">
-            ⚖️ Awaiting Trade Elements...
-        </div>
+    <footer id="verdict-wrapper">
+        <div id="ratio-output">VALUE RATIO: 0.00</div>
+        <div id="verdict-banner" class="state-awaiting">⚖️ Awaiting Trade Elements...</div>
     </footer>
 
     <script>
         const itemDatabase = [
-            { name: "Colossal Serum", keys: 150, gemsTax: 5000, goldTax: 0, rarity: "Legendary" },
-            { name: "Berserker Attire", keys: 270, gemsTax: 5625, goldTax: 0, rarity: "Epic" },
-            { name: "Fritz (Lvl 10)", keys: 6300, gemsTax: 115000, goldTax: 0, rarity: "Mythic" },
-            { name: "Helos", keys: 10800, gemsTax: 180000, goldTax: 0, rarity: "Mythic" },
-            { name: "Yeager", keys: 45, gemsTax: 2500, goldTax: 0, rarity: "Rare" },
-            { name: "Kengo (Lvl 0)", keys: 20, gemsTax: 0, goldTax: 480000, rarity: "Mythic" },
-            { name: "Kengo (Lvl 10)", keys: 35, gemsTax: 0, goldTax: 960000, rarity: "Mythic" },
-            { name: "Captain's Attire", keys: 4050, gemsTax: 1500, goldTax: 0, rarity: "Epic" },
-            { name: "Slime Sword", keys: 270, gemsTax: 8000, goldTax: 0, rarity: "Legendary" }
+            { name: "Colossal Serum", keys: 150, gemsTax: 5000, goldTax: 0 },
+            { name: "Berserker Attire", keys: 270, gemsTax: 5625, goldTax: 0 },
+            { name: "Fritz (Lvl 10)", keys: 6300, gemsTax: 115000, goldTax: 0 },
+            { name: "Helos", keys: 10800, gemsTax: 180000, goldTax: 0 },
+            { name: "Yeager", keys: 45, gemsTax: 2500, goldTax: 0 },
+            { name: "Kengo (Lvl 0)", keys: 20, gemsTax: 0, goldTax: 480000 },
+            { name: "Kengo (Lvl 10)", keys: 35, gemsTax: 0, goldTax: 960000 },
+            { name: "Captain's Attire", keys: 4050, gemsTax: 1500, goldTax: 0 },
+            { name: "Slime Sword", keys: 270, gemsTax: 8000, goldTax: 0 }
         ];
 
         let currentSide = 'A';
@@ -127,11 +378,10 @@
                 if (discordSdk.instanceId) {
                     document.getElementById("username").innerText = discordSdk.user.username;
                     if (discordSdk.user.avatar) {
-                        document.getElementById("avatar").innerHTML = `<img src="https://cdn.discordapp.com/avatars/${discordSdk.user.id}/${discordSdk.user.avatar}.webp?size=32" class="w-full h-full rounded-full"/>`;
+                        document.getElementById("avatar").innerHTML = `<img src="https://cdn.discordapp.com/avatars/${discordSdk.user.id}/${discordSdk.user.avatar}.webp?size=32"/>`;
                     }
                 }
             } catch (err) {
-                console.log("SDK Sandbox Check: Running outside Discord frame wrapper.");
                 document.getElementById("username").innerText = "Local Sandbox";
             }
         }
@@ -143,11 +393,11 @@
             const btnB = document.getElementById("btn-side-B");
             
             if (side === 'A') {
-                btnA.className = "flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-orange-600/20 border border-orange-500/50 text-orange-400 shadow-lg";
-                btnB.className = "flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-slate-800 border border-slate-700 text-slate-400";
+                btnA.className = "toggle-btn active";
+                btnB.className = "toggle-btn inactive";
             } else {
-                btnB.className = "flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-emerald-600/20 border border-emerald-500/50 text-emerald-400 shadow-lg";
-                btnA.className = "flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-slate-800 border border-slate-700 text-slate-400";
+                btnA.className = "toggle-btn inactive";
+                btnB.className = "toggle-btn active";
             }
         }
 
@@ -167,8 +417,8 @@
             box.innerHTML = "";
             matches.forEach(item => {
                 const div = document.createElement("div");
-                div.className = "px-3 py-2 text-xs border-b border-slate-800/40 hover:bg-slate-800 cursor-pointer flex justify-between";
-                div.innerHTML = `<span>${item.name}</span><span class="font-mono text-slate-400">🔑 ${item.keys}</span>`;
+                div.className = "autocomplete-item";
+                div.innerHTML = `<span>${item.name}</span><span>🔑 ${item.keys}</span>`;
                 div.onclick = () => addItemToTrade(item);
                 box.appendChild(div);
             });
@@ -214,13 +464,13 @@
                     totalGoldTax += (item.goldTax * item.qty);
 
                     const li = document.createElement("li");
-                    li.className = "flex justify-between items-center bg-[#111827]/90 p-2 rounded-lg text-xs border border-slate-800 shadow-sm";
+                    li.className = "trade-item-row";
                     li.innerHTML = `
-                        <div class="flex flex-col">
-                            <span class="font-medium">${item.name} <span class="text-blue-400">x${item.qty}</span></span>
-                            <span class="text-[9px] text-slate-500 font-mono">🔑${item.keys} each</span>
+                        <div class="item-details">
+                            <span class="item-name">${item.name} <span class="item-qty">x${item.qty}</span></span>
+                            <span class="item-subtext">🔑${item.keys} each</span>
                         </div>
-                        <button onclick="removeItem('${side}', ${index})" class="text-red-500/70 hover:text-red-400 text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/5 border border-red-500/10">✕</button>
+                        <button onclick="removeItem('${side}', ${index})" class="delete-btn">✕</button>
                     `;
                     list.appendChild(li);
                 });
@@ -242,20 +492,19 @@
             const vA = tradeState.sideA_total || 0;
             const vB = tradeState.sideB_total || 0;
             const banner = document.getElementById("verdict-banner");
-            const wrapper = document.getElementById("verdict-wrapper");
             const ratioOutput = document.getElementById("ratio-output");
 
             if (vA === 0 && vB === 0) {
                 ratioOutput.innerText = "VALUE RATIO: 0.00";
                 banner.innerText = "⚖️ Awaiting Trade Elements...";
-                wrapper.className = "bg-[#111827] border border-slate-800 rounded-xl p-3 text-center transition-all duration-300";
+                banner.className = "state-awaiting";
                 return;
             }
 
             if (vA === 0) {
                 ratioOutput.innerText = "VALUE RATIO: ∞";
                 banner.innerText = "🚀 MASSIVE WIN (INFINITE W)";
-                wrapper.className = "bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-3 text-center shadow-lg transition-all duration-300 text-emerald-400 animate-pulse";
+                banner.className = "state-win";
                 return;
             }
 
@@ -264,19 +513,19 @@
 
             if (ratio >= 1.50) {
                 banner.innerText = "🚀 MASSIVE WIN (HUGE W)";
-                wrapper.className = "bg-emerald-600/10 border border-emerald-500/50 rounded-xl p-3 text-center transition-all duration-300 text-emerald-400 shadow-md animate-pulse";
+                banner.className = "state-win";
             } else if (ratio >= 1.10) {
                 banner.innerText = "✅ PROFIT (SLIGHT W)";
-                wrapper.className = "bg-teal-600/10 border border-teal-500/40 rounded-xl p-3 text-center transition-all duration-300 text-teal-400";
+                banner.className = "state-profit";
             } else if (ratio > 0.90) {
                 banner.innerText = "🤝 FAIR TRADE";
-                wrapper.className = "bg-blue-600/10 border border-blue-500/40 rounded-xl p-3 text-center transition-all duration-300 text-blue-400";
+                banner.className = "state-fair";
             } else if (ratio >= 0.60) {
                 banner.innerText = "⚠️ LOSS (SLIGHT L)";
-                wrapper.className = "bg-amber-600/10 border border-amber-500/40 rounded-xl p-3 text-center transition-all duration-300 text-amber-500";
+                banner.className = "state-loss";
             } else {
                 banner.innerText = "🛑 SEVERE DEFICIT (MASSIVE L)";
-                wrapper.className = "bg-red-600/10 border border-red-500/50 rounded-xl p-3 text-center transition-all duration-300 text-red-400 shadow-md";
+                banner.className = "state-deficit";
             }
         }
     </script>
