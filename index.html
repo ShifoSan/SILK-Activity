@@ -6,7 +6,7 @@
     <title>S.I.L.K. Activity Test Shell</title>
     <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1.0.0/dist/index.js"></script>
     <style>
-        /* PURE NATIVE STYLING MATRIX - BYPASSES DISCORD IFRAME BLOCKS */
+        /* STYLING MATRIX - BYPASSES ALL IFRAME BLOCKS */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -73,7 +73,7 @@
             align-items: center;
             justify-content: center;
             font-size: 10px;
-            font-bold: true;
+            font-weight: bold;
             color: #38BDF8;
         }
         #avatar img {
@@ -247,9 +247,8 @@
             font-size: 10px;
         }
         .ledger-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .ledger-row:last-child { margin-bottom: 0; }
         .ledger-label { font-family: system-ui, sans-serif; color: #94A3B8; }
-        .divider { border-top: 1px solid rgba(51, 65, 85, 0.5); my: 4px; margin: 4px 0; }
+        .divider { border-top: 1px solid rgba(51, 65, 85, 0.5); margin: 4px 0; }
 
         /* FOOTER DISPLAY ACCENTS */
         footer {
@@ -258,7 +257,6 @@
             border-radius: 12px;
             padding: 12px;
             text-align: center;
-            transition: all 0.3s ease;
         }
         #ratio-output {
             color: #94A3B8;
@@ -273,7 +271,7 @@
             text-transform: uppercase;
         }
 
-        /* DYNAMIC FOOTER STATE INTERCHANGES */
+        /* DYNAMIC FOOTER COLORS */
         .state-awaiting { color: #94A3B8; }
         .state-win { color: #34D399; animation: pulse 2s infinite; }
         .state-profit { color: #2DD4BF; }
@@ -299,7 +297,7 @@
             <p>aotrvalue.com Simulation Profile</p>
         </div>
         <div class="profile-badge">
-            <span id="username">Test_Trader</span>
+            <span id="username">SILK_Trader</span>
             <div id="avatar">🤖</div>
         </div>
     </header>
@@ -355,6 +353,7 @@
     </footer>
 
     <script>
+        // Mock Database
         const itemDatabase = [
             { name: "Colossal Serum", keys: 150, gemsTax: 5000, goldTax: 0 },
             { name: "Berserker Attire", keys: 270, gemsTax: 5625, goldTax: 0 },
@@ -370,23 +369,34 @@
         let currentSide = 'A';
         let tradeState = { sideA: [], sideB: [] };
 
-        const discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID");
+        // DEFENSIVE CHECK: Safely see if window.discord exists to prevent blocking crashes
+        let discordSdk = null;
+        if (window.discord && window.discord.DiscordSDK) {
+            try {
+                discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID");
+            } catch(e) {
+                console.log("Discord SDK initialization skipped.");
+            }
+        }
 
         async function initDiscord() {
+            if (!discordSdk) {
+                document.getElementById("username").innerText = "Sandbox Channel";
+                return;
+            }
             try {
                 await discordSdk.ready();
-                if (discordSdk.instanceId) {
-                    document.getElementById("username").innerText = discordSdk.user.username;
-                    if (discordSdk.user.avatar) {
-                        document.getElementById("avatar").innerHTML = `<img src="https://cdn.discordapp.com/avatars/${discordSdk.user.id}/${discordSdk.user.avatar}.webp?size=32"/>`;
-                    }
+                // Safe check since user profile attributes require secondary OAuth signatures
+                if (discordSdk.instanceId && discordSdk.user) {
+                    document.getElementById("username").innerText = discordSdk.user.username || "Trader";
                 }
             } catch (err) {
-                document.getElementById("username").innerText = "Local Sandbox";
+                document.getElementById("username").innerText = "Activity Active";
             }
         }
         initDiscord();
 
+        // UI Interaction Handlers (Now completely isolated from global load failures)
         function setTargetSide(side) {
             currentSide = side;
             const btnA = document.getElementById("btn-side-A");
