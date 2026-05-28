@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.I.L.K. Activity Test Shell</title>
-    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1.0.0/dist/index.js"></script>
     <style>
         /* STYLING MATRIX - BYPASSES ALL IFRAME BLOCKS */
         * {
@@ -76,11 +75,6 @@
             font-weight: bold;
             color: #38BDF8;
         }
-        #avatar img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-        }
 
         /* CONTROLS & SEARCH */
         .search-section {
@@ -100,6 +94,9 @@
             font-weight: bold;
             border: 1px solid transparent;
             cursor: pointer;
+            background-color: #1E293B;
+            border-color: #334155;
+            color: #94A3B8;
             transition: all 0.2s ease;
         }
         #btn-side-A.active {
@@ -108,21 +105,11 @@
             color: #FB923C;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
-        #btn-side-A.inactive {
-            background-color: #1E293B;
-            border-color: #334155;
-            color: #94A3B8;
-        }
         #btn-side-B.active {
             background-color: rgba(16, 185, 129, 0.2);
             border-color: rgba(16, 185, 129, 0.5);
             color: #34D399;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        }
-        #btn-side-B.inactive {
-            background-color: #1E293B;
-            border-color: #334155;
-            color: #94A3B8;
         }
         #search-input {
             width: 100%;
@@ -133,7 +120,6 @@
             font-size: 12px;
             color: #F8FAFC;
             outline: none;
-            transition: border-color 0.2s;
         }
         #search-input:focus {
             border-color: #38BDF8;
@@ -149,7 +135,6 @@
             max-height: 160px;
             overflow-y: auto;
             z-index: 50;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
         }
         .autocomplete-item {
             padding: 8px 12px;
@@ -162,10 +147,6 @@
         .autocomplete-item:hover {
             background-color: #1E293B;
         }
-        .autocomplete-item span:last-child {
-            font-family: monospace;
-            color: #94A3B8;
-        }
         .hidden { display: none !important; }
 
         /* BENTO PANELS */
@@ -175,9 +156,6 @@
             gap: 12px;
             flex-grow: 1;
             margin-bottom: 12px;
-        }
-        @media (min-width: 768px) {
-            .grid-container { grid-template-columns: 1fr 1fr; }
         }
         .bento-card {
             background-color: rgba(11, 19, 43, 0.6);
@@ -208,7 +186,6 @@
             gap: 6px;
             max-height: 128px;
             overflow-y: auto;
-            padding-right: 4px;
         }
         .trade-item-row {
             display: flex;
@@ -234,9 +211,8 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .delete-btn:hover { color: #EF4444; }
 
-        /* LEDGER DISPLAY BOXES */
+        /* LEDGER BOXES */
         .ledger-box {
             background-color: rgba(17, 24, 39, 0.8);
             padding: 8px;
@@ -247,10 +223,10 @@
             font-size: 10px;
         }
         .ledger-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .ledger-label { font-family: system-ui, sans-serif; color: #94A3B8; }
+        .ledger-label { color: #94A3B8; }
         .divider { border-top: 1px solid rgba(51, 65, 85, 0.5); margin: 4px 0; }
 
-        /* FOOTER DISPLAY ACCENTS */
+        /* FOOTER */
         footer {
             background-color: #111827;
             border: 1px solid #1E293B;
@@ -267,26 +243,15 @@
         #verdict-banner {
             font-size: 12px;
             font-weight: 900;
-            letter-spacing: 0.05em;
             text-transform: uppercase;
         }
 
-        /* DYNAMIC FOOTER COLORS */
         .state-awaiting { color: #94A3B8; }
-        .state-win { color: #34D399; animation: pulse 2s infinite; }
+        .state-win { color: #34D399; }
         .state-profit { color: #2DD4BF; }
         .state-fair { color: #60A5FA; }
         .state-loss { color: #F59E0B; }
         .state-deficit { color: #F87171; }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #0F172A; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
     </style>
 </head>
 <body class="select-none">
@@ -305,28 +270,27 @@
     <section class="search-section">
         <div class="side-toggles">
             <button onclick="setTargetSide('A')" id="btn-side-A" class="toggle-btn active">📤 Add to Side A</button>
-            <button onclick="setTargetSide('B')" id="btn-side-B" class="toggle-btn inactive">📥 Add to Side B</button>
+            <button onclick="setTargetSide('B')" id="btn-side-B" class="toggle-btn">📥 Add to Side B</button>
         </div>
         <div style="position: relative;">
-            <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Type item name (e.g., Fritz, Kengo, Serum)...">
+            <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Type item name (e.g., Fritz, Serum)...">
             <div id="autocomplete-box" class="hidden"></div>
         </div>
     </section>
 
     <main class="grid-container">
-        
         <div class="bento-card card-side-A">
             <div>
                 <h2 class="card-title title-A">📤 Side A (Giving Inventory)</h2>
                 <ul id="list-side-A" class="inventory-list"></ul>
             </div>
             <div class="ledger-box">
-                <div class="ledger-row"><span class="ledger-label">Total Value:</span><span id="total-keys-A" style="color:#E2E8F0;">🔑 0 Keys</span></div>
-                <div class="ledger-row"><span></span><span id="total-scrolls-A" style="color:#94A3B8;">📜 0.0 Scrolls</span></div>
-                <div class="ledger-row"><span></span><span id="total-viz-A" style="color:#94A3B8;">👺 0.00 Viz</span></div>
+                <div class="ledger-row"><span class="ledger-label">Total Value:</span><span id="total-keys-A">🔑 0 Keys</span></div>
+                <div class="ledger-row"><span></span><span id="total-scrolls-A">📜 0.0 Scrolls</span></div>
+                <div class="ledger-row"><span></span><span id="total-viz-A">👺 0.00 Viz</span></div>
                 <div class="divider"></div>
-                <div class="ledger-row"><span class="ledger-label">Inventory Tax:</span><span id="tax-gems-A" style="color:#94A3B8;">💎 0 Gems</span></div>
-                <div class="ledger-row"><span></span><span id="tax-gold-A" style="color:#94A3B8;">🪙 0 Gold</span></div>
+                <div class="ledger-row"><span class="ledger-label">Inventory Tax:</span><span id="tax-gems-A">💎 0 Gems</span></div>
+                <div class="ledger-row"><span></span><span id="tax-gold-A">🪙 0 Gold</span></div>
             </div>
         </div>
 
@@ -336,15 +300,14 @@
                 <ul id="list-side-B" class="inventory-list"></ul>
             </div>
             <div class="ledger-box">
-                <div class="ledger-row"><span class="ledger-label">Total Value:</span><span id="total-keys-B" style="color:#E2E8F0;">🔑 0 Keys</span></div>
-                <div class="ledger-row"><span></span><span id="total-scrolls-B" style="color:#94A3B8;">📜 0.0 Scrolls</span></div>
-                <div class="ledger-row"><span></span><span id="total-viz-B" style="color:#94A3B8;">👺 0.00 Viz</span></div>
+                <div class="ledger-row"><span class="ledger-label">Total Value:</span><span id="total-keys-B">🔑 0 Keys</span></div>
+                <div class="ledger-row"><span></span><span id="total-scrolls-B">📜 0.0 Scrolls</span></div>
+                <div class="ledger-row"><span></span><span id="total-viz-B">👺 0.00 Viz</span></div>
                 <div class="divider"></div>
-                <div class="ledger-row"><span class="ledger-label">Inventory Tax:</span><span id="tax-gems-B" style="color:#94A3B8;">💎 0 Gems</span></div>
-                <div class="ledger-row"><span></span><span id="tax-gold-B" style="color:#94A3B8;">🪙 0 Gold</span></div>
+                <div class="ledger-row"><span class="ledger-label">Inventory Tax:</span><span id="tax-gems-B">💎 0 Gems</span></div>
+                <div class="ledger-row"><span></span><span id="tax-gold-B">🪙 0 Gold</span></div>
             </div>
         </div>
-
     </main>
 
     <footer id="verdict-wrapper">
@@ -353,7 +316,7 @@
     </footer>
 
     <script>
-        // Mock Database
+        // Completely eliminated outside dependencies to survive Discord's Proxy
         const itemDatabase = [
             { name: "Colossal Serum", keys: 150, gemsTax: 5000, goldTax: 0 },
             { name: "Berserker Attire", keys: 270, gemsTax: 5625, goldTax: 0 },
@@ -369,34 +332,10 @@
         let currentSide = 'A';
         let tradeState = { sideA: [], sideB: [] };
 
-        // DEFENSIVE CHECK: Safely see if window.discord exists to prevent blocking crashes
-        let discordSdk = null;
-        if (window.discord && window.discord.DiscordSDK) {
-            try {
-                discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID");
-            } catch(e) {
-                console.log("Discord SDK initialization skipped.");
-            }
-        }
+        // Fully sandboxed mockup SDK initialization block
+        console.log("Running in secure self-contained sandbox mode.");
+        document.getElementById("username").innerText = "S.I.L.K. Trader";
 
-        async function initDiscord() {
-            if (!discordSdk) {
-                document.getElementById("username").innerText = "Sandbox Channel";
-                return;
-            }
-            try {
-                await discordSdk.ready();
-                // Safe check since user profile attributes require secondary OAuth signatures
-                if (discordSdk.instanceId && discordSdk.user) {
-                    document.getElementById("username").innerText = discordSdk.user.username || "Trader";
-                }
-            } catch (err) {
-                document.getElementById("username").innerText = "Activity Active";
-            }
-        }
-        initDiscord();
-
-        // UI Interaction Handlers (Now completely isolated from global load failures)
         function setTargetSide(side) {
             currentSide = side;
             const btnA = document.getElementById("btn-side-A");
@@ -404,9 +343,9 @@
             
             if (side === 'A') {
                 btnA.className = "toggle-btn active";
-                btnB.className = "toggle-btn inactive";
+                btnB.className = "toggle-btn";
             } else {
-                btnA.className = "toggle-btn inactive";
+                btnA.className = "toggle-btn";
                 btnB.className = "toggle-btn active";
             }
         }
