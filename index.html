@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.I.L.K. Activity Test Shell</title>
+    <script src="/.proxy/jsdelivr/npm/@discord/embedded-app-sdk@1.0.0/dist/index.js"></script>
     <style>
         /* NATIVE CSS MATRIX - BYPASSES ALL IFRAME BLOCKS */
         * {
@@ -196,7 +197,6 @@
         #ratio-output { color: #94A3B8; font-family: monospace; font-size: 10px; margin-bottom: 4px; }
         #verdict-banner { font-size: 12px; font-weight: 900; }
 
-        /* MOBILE ERROR CONSOLE CONTAINER */
         #mobile-debug-log {
             background-color: #1A0505;
             border: 2px solid #EF4444;
@@ -214,43 +214,28 @@
 </head>
 <body class="select-none">
 
-    <!-- INSTANT ERROR CAPTURE SYSTEM -->
-    <script>
-        window.onerror = function(message, source, lineno, colno, error) {
-            const consoleBox = document.getElementById("mobile-debug-log");
-            if (consoleBox) {
-                consoleBox.style.display = "block";
-                consoleBox.innerText += `\n🚨 CRASH: ${message} (Line ${lineno})`;
-            }
-            return false;
-        };
-    </script>
-
-    <!-- HEADER PANEL -->
     <header>
         <div>
             <h1>⚙️ S.I.L.K. Matrix Terminal</h1>
-            <p>Activity Operation Validation</p>
+            <p>Activity CSP Protection Compliant</p>
         </div>
         <div class="profile-badge">
-            <span id="username">Device_Ready</span>
+            <span id="username">SILK_Trader</span>
             <div id="avatar">🤖</div>
         </div>
     </header>
 
-    <!-- RUNTIME CONTROLS -->
     <section class="search-section">
         <div class="side-toggles">
-            <button onclick="setTargetSide('A')" id="btn-side-A" class="toggle-btn active-A">📤 Side A</button>
-            <button onclick="setTargetSide('B')" id="btn-side-B" class="toggle-btn">📥 Side B</button>
+            <button id="btn-side-A" class="toggle-btn active-A">📤 Side A</button>
+            <button id="btn-side-B" class="toggle-btn">📥 Side B</button>
         </div>
         <div style="position: relative;">
-            <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Tap here & type item name (e.g., Fritz, Serum)...">
+            <input type="text" id="search-input" placeholder="Tap here & type item name (e.g., Fritz, Serum)...">
             <div id="autocomplete-box" class="hidden"></div>
         </div>
     </section>
 
-    <!-- BALANCE COLUMNS -->
     <main class="grid-container">
         <div class="bento-card card-side-A">
             <div>
@@ -283,17 +268,24 @@
         </div>
     </main>
 
-    <!-- DECISION MATRIX BANNER -->
     <footer id="verdict-wrapper">
         <div id="ratio-output">VALUE RATIO: 0.00</div>
         <div id="verdict-banner" style="color: #94A3B8;">⚖️ Awaiting Trade Elements...</div>
     </footer>
 
-    <!-- ON-SCREEN CONSOLE VIEWPORT -->
     <div id="mobile-debug-log" style="display:none;">⚙️ System Diagnostics Active...</div>
 
-    <!-- PURE STANDALONE LOGIC CONTROLLER -->
     <script>
+        // Diagnostic Tracker
+        window.onerror = function(message, source, lineno, colno, error) {
+            const consoleBox = document.getElementById("mobile-debug-log");
+            if (consoleBox) {
+                consoleBox.style.display = "block";
+                consoleBox.innerText += `\n🚨 ERROR: ${message} (Line ${lineno})`;
+            }
+            return false;
+        };
+
         const itemDatabase = [
             { name: "Colossal Serum", keys: 150, gemsTax: 5000, goldTax: 0 },
             { name: "Berserker Attire", keys: 270, gemsTax: 5625, goldTax: 0 },
@@ -317,9 +309,40 @@
             }
         }
 
+        // Programmatic Event Binding Matrix (Bypasses Discord's Inline Attribute Ban)
+        document.getElementById('btn-side-A').addEventListener('click', function() { setTargetSide('A'); });
+        document.getElementById('btn-side-B').addEventListener('click', function() { setTargetSide('B'); });
+        document.getElementById('search-input').addEventListener('input', function(e) { handleSearch(e.target.value); });
+
+        // Safe evaluate wrapper for proxy script loads
+        let discordSdk = null;
+        if (window.discord && window.discord.DiscordSDK) {
+            try {
+                discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID");
+            } catch(e) {
+                logDebug("SDK construct error.");
+            }
+        }
+
+        async function initDiscord() {
+            if (!discordSdk) {
+                document.getElementById("username").innerText = "S.I.L.K. Matrix Ready";
+                return;
+            }
+            try {
+                await discordSdk.ready();
+                if (discordSdk.instanceId && discordSdk.user) {
+                    document.getElementById("username").innerText = discordSdk.user.username || "Trader";
+                }
+            } catch (err) {
+                document.getElementById("username").innerText = "S.I.L.K. Terminal App";
+            }
+        }
+        initDiscord();
+
         function setTargetSide(side) {
             currentSide = side;
-            logDebug(`Switched target column to: Side ${side}`);
+            logDebug(`Targeting Side: ${side}`);
             const btnA = document.getElementById("btn-side-A");
             const btnB = document.getElementById("btn-side-B");
             
@@ -351,7 +374,6 @@
                 div.className = "autocomplete-item";
                 div.innerHTML = `<span>${item.name}</span><span style="font-family:monospace; color:#94A3B8;">🔑 ${item.keys}</span>`;
                 
-                // Directly hook touch and mouse click events
                 div.addEventListener('click', function() {
                     addItemToTrade(item);
                 });
@@ -361,7 +383,7 @@
         }
 
         function addItemToTrade(item) {
-            logDebug(`Adding item: ${item.name}`);
+            logDebug(`Added: ${item.name}`);
             document.getElementById("autocomplete-box").classList.add("hidden");
             document.getElementById("search-input").value = "";
             
@@ -471,7 +493,7 @@
             }
         }
 
-        logDebug("Interface Event Listeners completely loaded.");
+        logDebug("Safe programmatic listeners initialized.");
     </script>
 </body>
 </html>
