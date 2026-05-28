@@ -3,497 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.I.L.K. Activity Test Shell</title>
+    <title>S.I.L.K. Trading Center</title>
     <script src="/.proxy/jsdelivr/npm/@discord/embedded-app-sdk@1.0.0/dist/index.js"></script>
     <style>
-        /* NATIVE CSS MATRIX - BYPASSES ALL IFRAME BLOCKS */
+        /* NATIVE STYLING MATRIX - BYPASSES DISCORD IFRAME RESTRICTIONS */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
+        
+        /* Registering your local Viaoda Libre premium font asset */
+        @font-face {
+            font-family: 'Viaoda Libre';
+            src: url('./fonts/ViaodaLibre-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         body {
-            background-color: #080C14;
+            background-color: #050811;
             color: #E2E8F0;
             font-family: system-ui, -apple-system, sans-serif;
-            padding: 12px;
             min-height: 100vh;
+            overflow: hidden;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            user-select: none;
-        }
-        
-        /* HEADER */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #111827;
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid #1E293B;
-            margin-bottom: 12px;
-        }
-        h1 {
-            font-size: 14px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #38BDF8;
-        }
-        header p {
-            font-size: 10px;
-            color: #94A3B8;
-        }
-        .profile-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: rgba(30, 41, 59, 0.4);
-            padding: 4px 10px;
-            border-radius: 8px;
-            border: 1px solid #1E293B;
-        }
-        #username {
-            font-size: 12px;
-            font-weight: 600;
-            color: #CBD5E1;
-            font-family: monospace;
-        }
-        #avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background-color: rgba(56, 189, 248, 0.2);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-            color: #38BDF8;
+            align-items: center;
         }
 
-        /* CONTROLS */
-        .search-section {
-            margin-bottom: 12px;
-            position: relative;
-        }
-        .side-toggles {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .toggle-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            border: 1px solid #334155;
-            cursor: pointer;
-            background-color: #1E293B;
-            color: #94A3B8;
-            transition: all 0.2s ease;
-        }
-        .toggle-btn.active-A {
-            background-color: rgba(249, 115, 22, 0.2);
-            border-color: #F97316;
-            color: #FB923C;
-        }
-        .toggle-btn.active-B {
-            background-color: rgba(16, 185, 129, 0.2);
-            border-color: #10B981;
-            color: #34D399;
-        }
-        #search-input {
+        /* Responsive Viewport Shell - Locks strictly to the containment grid */
+        #app-viewport {
             width: 100%;
-            background-color: #111827;
-            border: 1px solid #1E293B;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 12px;
-            color: #F8FAFC;
-            outline: none;
-        }
-        #search-input:focus {
-            border-color: #38BDF8;
-        }
-        #autocomplete-box {
-            position: absolute;
-            left: 0;
-            right: 0;
-            margin-top: 4px;
-            background-color: #111827;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            max-height: 160px;
-            overflow-y: auto;
-            z-index: 100;
-        }
-        .autocomplete-item {
-            padding: 10px 12px;
-            font-size: 12px;
-            border-bottom: 1px solid rgba(51, 65, 85, 0.4);
-            cursor: pointer;
+            height: 100vh;
+            position: relative;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
+            align-items: center;
         }
-        .hidden { display: none !important; }
 
-        /* PANELS */
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            flex-grow: 1;
-            margin-bottom: 12px;
-        }
-        .bento-card {
-            background-color: rgba(11, 19, 43, 0.6);
-            border-radius: 12px;
-            padding: 12px;
+        /* Universal module animation classes */
+        .page-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            min-height: 150px;
-        }
-        .card-side-A { border: 1px solid rgba(249, 115, 22, 0.2); }
-        .card-side-B { border: 1px solid rgba(16, 185, 129, 0.2); }
-        .card-title { font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; }
-        .title-A { color: #FB923C; }
-        .title-B { color: #34D399; }
-
-        .inventory-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-        .trade-item-row {
-            display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            background-color: #111827;
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid #1E293B;
+            transition: opacity 0.5s ease-in-out;
+            opacity: 1;
         }
-        .item-details { display: flex; flex-direction: column; }
-        .item-name { font-size: 12px; font-weight: 500; }
-        .item-qty { color: #38BDF8; font-weight: bold; }
-        .item-subtext { font-size: 9px; color: #64748B; font-family: monospace; }
-        .delete-btn { color: #EF4444; background: none; border: none; font-weight: bold; cursor: pointer; padding: 4px; }
-
-        .ledger-box {
-            background-color: rgba(17, 24, 39, 0.8);
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #1E293B;
-            margin-top: 8px;
-            font-family: monospace;
-            font-size: 10px;
+        .page-layer.fade-out {
+            opacity: 0;
+            pointer-events: none;
         }
-        .ledger-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .divider { border-top: 1px solid rgba(51, 65, 85, 0.5); margin: 4px 0; }
-
-        footer { background-color: #111827; border: 1px solid #1E293B; border-radius: 12px; padding: 12px; text-align: center; }
-        #ratio-output { color: #94A3B8; font-family: monospace; font-size: 10px; margin-bottom: 4px; }
-        #verdict-banner { font-size: 12px; font-weight: 900; }
-
-        #mobile-debug-log {
-            background-color: #1A0505;
-            border: 2px solid #EF4444;
-            color: #FCA5A5;
-            padding: 8px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 10px;
-            max-height: 100px;
-            overflow-y: auto;
-            margin-top: 10px;
-            white-space: pre-wrap;
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
-<body class="select-none">
+<body>
 
-    <header>
-        <div>
-            <h1>⚙️ S.I.L.K. Matrix Terminal</h1>
-            <p>Activity CSP Protection Compliant</p>
-        </div>
-        <div class="profile-badge">
-            <span id="username">SILK_Trader</span>
-            <div id="avatar">🤖</div>
-        </div>
-    </header>
+    <div id="app-viewport"></div>
 
-    <section class="search-section">
-        <div class="side-toggles">
-            <button id="btn-side-A" class="toggle-btn active-A">📤 Side A</button>
-            <button id="btn-side-B" class="toggle-btn">📥 Side B</button>
-        </div>
-        <div style="position: relative;">
-            <input type="text" id="search-input" placeholder="Tap here & type item name (e.g., Fritz, Serum)...">
-            <div id="autocomplete-box" class="hidden"></div>
-        </div>
-    </section>
+    <script type="module">
+        import { WelcomePage } from './pages/welcome.js';
 
-    <main class="grid-container">
-        <div class="bento-card card-side-A">
-            <div>
-                <h2 class="card-title title-A">📤 Side A (Giving)</h2>
-                <ul id="list-side-A" class="inventory-list"></ul>
-            </div>
-            <div class="ledger-box">
-                <div class="ledger-row"><span>Total Value:</span><span id="total-keys-A">🔑 0 Keys</span></div>
-                <div class="ledger-row"><span></span><span id="total-scrolls-A">📜 0.0 Scrolls</span></div>
-                <div class="ledger-row"><span></span><span id="total-viz-A">👺 0.00 Viz</span></div>
-                <div class="divider"></div>
-                <div class="ledger-row"><span>Required Tax:</span><span id="tax-gems-A">💎 0 Gems</span></div>
-                <div class="ledger-row"><span></span><span id="tax-gold-A">🪙 0 Gold</span></div>
-            </div>
-        </div>
-
-        <div class="bento-card card-side-B">
-            <div>
-                <h2 class="card-title title-B">📥 Side B (Getting)</h2>
-                <ul id="list-side-B" class="inventory-list"></ul>
-            </div>
-            <div class="ledger-box">
-                <div class="ledger-row"><span>Total Value:</span><span id="total-keys-B">🔑 0 Keys</span></div>
-                <div class="ledger-row"><span></span><span id="total-scrolls-B">📜 0.0 Scrolls</span></div>
-                <div class="ledger-row"><span></span><span id="total-viz-B">👺 0.00 Viz</span></div>
-                <div class="divider"></div>
-                <div class="ledger-row"><span>Required Tax:</span><span id="tax-gems-B">💎 0 Gems</span></div>
-                <div class="ledger-row"><span></span><span id="tax-gold-B">🪙 0 Gold</span></div>
-            </div>
-        </div>
-    </main>
-
-    <footer id="verdict-wrapper">
-        <div id="ratio-output">VALUE RATIO: 0.00</div>
-        <div id="verdict-banner" style="color: #94A3B8;">⚖️ Awaiting Trade Elements...</div>
-    </footer>
-
-    <div id="mobile-debug-log" style="display:none;">⚙️ System Diagnostics Active...</div>
-
-    <script>
-        // Diagnostic Tracker
-        window.onerror = function(message, source, lineno, colno, error) {
-            const consoleBox = document.getElementById("mobile-debug-log");
-            if (consoleBox) {
-                consoleBox.style.display = "block";
-                consoleBox.innerText += `\n🚨 ERROR: ${message} (Line ${lineno})`;
-            }
-            return false;
-        };
-
-        const itemDatabase = [
-            { name: "Colossal Serum", keys: 150, gemsTax: 5000, goldTax: 0 },
-            { name: "Berserker Attire", keys: 270, gemsTax: 5625, goldTax: 0 },
-            { name: "Fritz (Lvl 10)", keys: 6300, gemsTax: 115000, goldTax: 0 },
-            { name: "Helos", keys: 10800, gemsTax: 180000, goldTax: 0 },
-            { name: "Yeager", keys: 45, gemsTax: 2500, goldTax: 0 },
-            { name: "Kengo (Lvl 0)", keys: 20, gemsTax: 0, goldTax: 480000 },
-            { name: "Kengo (Lvl 10)", keys: 35, gemsTax: 0, goldTax: 960000 },
-            { name: "Captain's Attire", keys: 4050, gemsTax: 1500, goldTax: 0 },
-            { name: "Slime Sword", keys: 270, gemsTax: 8000, goldTax: 0 }
-        ];
-
-        let currentSide = 'A';
-        let tradeState = { sideA: [], sideB: [] };
-
-        function logDebug(msg) {
-            const consoleBox = document.getElementById("mobile-debug-log");
-            if (consoleBox) {
-                consoleBox.style.display = "block";
-                consoleBox.innerText += `\nℹ️ ${msg}`;
-            }
-        }
-
-        // Programmatic Event Binding Matrix (Bypasses Discord's Inline Attribute Ban)
-        document.getElementById('btn-side-A').addEventListener('click', function() { setTargetSide('A'); });
-        document.getElementById('btn-side-B').addEventListener('click', function() { setTargetSide('B'); });
-        document.getElementById('search-input').addEventListener('input', function(e) { handleSearch(e.target.value); });
-
-        // Safe evaluate wrapper for proxy script loads
+        // Initialize Discord Embedded SDK Connection Safely
         let discordSdk = null;
         if (window.discord && window.discord.DiscordSDK) {
             try {
                 discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID");
             } catch(e) {
-                logDebug("SDK construct error.");
+                console.log("Discord Activity Framework initialized.");
             }
         }
 
-        async function initDiscord() {
-            if (!discordSdk) {
-                document.getElementById("username").innerText = "S.I.L.K. Matrix Ready";
-                return;
-            }
-            try {
-                await discordSdk.ready();
-                if (discordSdk.instanceId && discordSdk.user) {
-                    document.getElementById("username").innerText = discordSdk.user.username || "Trader";
-                }
-            } catch (err) {
-                document.getElementById("username").innerText = "S.I.L.K. Terminal App";
-            }
-        }
-        initDiscord();
-
-        function setTargetSide(side) {
-            currentSide = side;
-            logDebug(`Targeting Side: ${side}`);
-            const btnA = document.getElementById("btn-side-A");
-            const btnB = document.getElementById("btn-side-B");
-            
-            if (side === 'A') {
-                btnA.className = "toggle-btn active-A";
-                btnB.className = "toggle-btn";
-            } else {
-                btnA.className = "toggle-btn";
-                btnB.className = "toggle-btn active-B";
-            }
-        }
-
-        function handleSearch(query) {
-            const box = document.getElementById("autocomplete-box");
-            if (!query.trim()) {
-                box.classList.add("hidden");
-                return;
+        async function bootActivity() {
+            if (discordSdk) {
+                try { await discordSdk.ready(); } catch(err) { console.log("Local browser fallback active."); }
             }
             
-            const matches = itemDatabase.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
-            if (matches.length === 0) {
-                box.classList.add("hidden");
-                return;
-            }
-
-            box.innerHTML = "";
-            matches.forEach(item => {
-                const div = document.createElement("div");
-                div.className = "autocomplete-item";
-                div.innerHTML = `<span>${item.name}</span><span style="font-family:monospace; color:#94A3B8;">🔑 ${item.keys}</span>`;
-                
-                div.addEventListener('click', function() {
-                    addItemToTrade(item);
-                });
-                box.appendChild(div);
-            });
-            box.classList.remove("hidden");
+            // Mount the Welcome screen template safely into the base view layer
+            document.getElementById('app-viewport').innerHTML = WelcomePage.render();
+            WelcomePage.init();
         }
 
-        function addItemToTrade(item) {
-            logDebug(`Added: ${item.name}`);
-            document.getElementById("autocomplete-box").classList.add("hidden");
-            document.getElementById("search-input").value = "";
-            
-            const targetArray = currentSide === 'A' ? tradeState.sideA : tradeState.sideB;
-            const existing = targetArray.find(i => i.name === item.name);
-            
-            if (existing) {
-                existing.qty += 1;
-            } else {
-                targetArray.push({ ...item, qty: 1 });
-            }
-            renderInterface();
-        }
-
-        function removeItem(side, index) {
-            if (side === 'A') {
-                tradeState.sideA.splice(index, 1);
-            } else {
-                tradeState.sideB.splice(index, 1);
-            }
-            renderInterface();
-        }
-
-        function renderInterface() {
-            ['A', 'B'].forEach(side => {
-                const list = document.getElementById(`list-side-${side}`);
-                const targetArray = side === 'A' ? tradeState.sideA : tradeState.sideB;
-                list.innerHTML = "";
-                
-                let totalKeys = 0;
-                let totalGemsTax = 0;
-                let totalGoldTax = 0;
-
-                targetArray.forEach((item, index) => {
-                    totalKeys += (item.keys * item.qty);
-                    totalGemsTax += (item.gemsTax * item.qty);
-                    totalGoldTax += (item.goldTax * item.qty);
-
-                    const li = document.createElement("li");
-                    li.className = "trade-item-row";
-                    li.innerHTML = `
-                        <div class="item-details">
-                            <span class="item-name">${item.name} <span class="item-qty">x${item.qty}</span></span>
-                            <span class="item-subtext">🔑${item.keys} each</span>
-                        </div>
-                        <button class="delete-btn">✕</button>
-                    `;
-                    
-                    li.querySelector('.delete-btn').addEventListener('click', function() {
-                        removeItem(side, index);
-                    });
-                    
-                    list.appendChild(li);
-                });
-
-                document.getElementById(`total-keys-${side}`).innerText = `🔑 ${totalKeys.toLocaleString()} Keys`;
-                document.getElementById(`total-scrolls-${side}`).innerText = `📜 ${(totalKeys / 3).toFixed(1)} Scrolls`;
-                document.getElementById(`total-viz-${side}`).innerText = `👺 ${(totalKeys / 900).toFixed(2)} Viz`;
-                document.getElementById(`tax-gems-${side}`).innerText = `💎 ${totalGemsTax.toLocaleString()} Gems`;
-                document.getElementById(`tax-gold-${side}`).innerText = `🪙 ${totalGoldTax.toLocaleString()} Gold`;
-                
-                if (side === 'A') tradeState.sideA_total = totalKeys;
-                if (side === 'B') tradeState.sideB_total = totalKeys;
-            });
-
-            evaluateVerdict();
-        }
-
-        function evaluateVerdict() {
-            const vA = tradeState.sideA_total || 0;
-            const vB = tradeState.sideB_total || 0;
-            const banner = document.getElementById("verdict-banner");
-            const ratioOutput = document.getElementById("ratio-output");
-
-            if (vA === 0 && vB === 0) {
-                ratioOutput.innerText = "VALUE RATIO: 0.00";
-                banner.innerText = "⚖️ Awaiting Trade Elements...";
-                banner.style.color = "#94A3B8";
-                return;
-            }
-
-            if (vA === 0) {
-                ratioOutput.innerText = "VALUE RATIO: ∞";
-                banner.innerText = "🚀 MASSIVE WIN (INFINITE W)";
-                banner.style.color = "#34D399";
-                return;
-            }
-
-            const ratio = vB / vA;
-            ratioOutput.innerText = `VALUE RATIO: ${ratio.toFixed(2)}`;
-
-            if (ratio >= 1.50) {
-                banner.innerText = "🚀 MASSIVE WIN (HUGE W)";
-                banner.style.color = "#34D399";
-            } else if (ratio >= 1.10) {
-                banner.innerText = "✅ PROFIT (SLIGHT W)";
-                banner.style.color = "#2DD4BF";
-            } else if (ratio > 0.90) {
-                banner.innerText = "🤝 FAIR TRADE";
-                banner.style.color = "#60A5FA";
-            } else if (ratio >= 0.60) {
-                banner.innerText = "⚠️ LOSS (SLIGHT L)";
-                banner.style.color = "#F59E0B";
-            } else {
-                banner.innerText = "🛑 SEVERE DEFICIT (MASSIVE L)";
-                banner.style.color = "#F87171";
-            }
-        }
-
-        logDebug("Safe programmatic listeners initialized.");
+        // Fire the application pipeline
+        bootActivity();
     </script>
 </body>
 </html>
