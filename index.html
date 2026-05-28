@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.I.L.K. Activity Test Shell</title>
-    <script src="/.proxy/jsdelivr/npm/@discord/embedded-app-sdk@1.0.0/dist/index.js"></script>
     <style>
-        /* STYLING MATRIX - BYPASSES ALL IFRAME BLOCKS */
+        /* NATIVE CSS MATRIX - BYPASSES ALL IFRAME BLOCKS */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -34,7 +33,6 @@
             border-radius: 12px;
             border: 1px solid #1E293B;
             margin-bottom: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
         }
         h1 {
             font-size: 14px;
@@ -46,7 +44,6 @@
         header p {
             font-size: 10px;
             color: #94A3B8;
-            font-weight: 500;
         }
         .profile-badge {
             display: flex;
@@ -77,7 +74,7 @@
             color: #38BDF8;
         }
 
-        /* CONTROLS & SEARCH */
+        /* CONTROLS */
         .search-section {
             margin-bottom: 12px;
             position: relative;
@@ -89,35 +86,32 @@
         }
         .toggle-btn {
             flex: 1;
-            padding: 8px;
+            padding: 10px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: bold;
-            border: 1px solid transparent;
+            border: 1px solid #334155;
             cursor: pointer;
             background-color: #1E293B;
-            border-color: #334155;
             color: #94A3B8;
             transition: all 0.2s ease;
         }
-        #btn-side-A.active {
+        .toggle-btn.active-A {
             background-color: rgba(249, 115, 22, 0.2);
-            border-color: rgba(249, 115, 22, 0.5);
+            border-color: #F97316;
             color: #FB923C;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
-        #btn-side-B.active {
+        .toggle-btn.active-B {
             background-color: rgba(16, 185, 129, 0.2);
-            border-color: rgba(16, 185, 129, 0.5);
+            border-color: #10B981;
             color: #34D399;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
         #search-input {
             width: 100%;
             background-color: #111827;
             border: 1px solid #1E293B;
             border-radius: 12px;
-            padding: 10px 14px;
+            padding: 12px;
             font-size: 12px;
             color: #F8FAFC;
             outline: none;
@@ -135,22 +129,19 @@
             border-radius: 12px;
             max-height: 160px;
             overflow-y: auto;
-            z-index: 50;
+            z-index: 100;
         }
         .autocomplete-item {
-            padding: 8px 12px;
+            padding: 10px 12px;
             font-size: 12px;
             border-bottom: 1px solid rgba(51, 65, 85, 0.4);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
         }
-        .autocomplete-item:hover {
-            background-color: #1E293B;
-        }
         .hidden { display: none !important; }
 
-        /* BENTO PANELS */
+        /* PANELS */
         .grid-container {
             display: grid;
             grid-template-columns: 1fr;
@@ -165,35 +156,21 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 160px;
+            min-height: 150px;
         }
-        .card-side-A { border: 1px solid rgba(249, 115, 22, 0.15); }
-        .card-side-B { border: 1px solid rgba(16, 185, 129, 0.15); }
-        
-        .card-title {
-            font-size: 10px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 8px;
-        }
+        .card-side-A { border: 1px solid rgba(249, 115, 22, 0.2); }
+        .card-side-B { border: 1px solid rgba(16, 185, 129, 0.2); }
+        .card-title { font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; }
         .title-A { color: #FB923C; }
         .title-B { color: #34D399; }
 
-        .inventory-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            max-height: 128px;
-            overflow-y: auto;
-        }
+        .inventory-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
         .trade-item-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: rgba(17, 24, 39, 0.9);
-            padding: 8px;
+            background-color: #111827;
+            padding: 8px 12px;
             border-radius: 8px;
             border: 1px solid #1E293B;
         }
@@ -201,121 +178,121 @@
         .item-name { font-size: 12px; font-weight: 500; }
         .item-qty { color: #38BDF8; font-weight: bold; }
         .item-subtext { font-size: 9px; color: #64748B; font-family: monospace; }
-        
-        .delete-btn {
-            color: rgba(239, 68, 68, 0.7);
-            background-color: rgba(239, 68, 68, 0.05);
-            border: 1px solid rgba(239, 68, 68, 0.1);
-            padding: 2px 6px;
-            font-size: 10px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+        .delete-btn { color: #EF4444; background: none; border: none; font-weight: bold; cursor: pointer; padding: 4px; }
 
-        /* LEDGER BOXES */
         .ledger-box {
             background-color: rgba(17, 24, 39, 0.8);
             padding: 8px;
             border-radius: 8px;
-            border: 1px solid rgba(51, 65, 85, 0.6);
+            border: 1px solid #1E293B;
             margin-top: 8px;
             font-family: monospace;
             font-size: 10px;
         }
         .ledger-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .ledger-label { color: #94A3B8; }
         .divider { border-top: 1px solid rgba(51, 65, 85, 0.5); margin: 4px 0; }
 
-        /* FOOTER */
-        footer {
-            background-color: #111827;
-            border: 1px solid #1E293B;
-            border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-        }
-        #ratio-output {
-            color: #94A3B8;
+        footer { background-color: #111827; border: 1px solid #1E293B; border-radius: 12px; padding: 12px; text-align: center; }
+        #ratio-output { color: #94A3B8; font-family: monospace; font-size: 10px; margin-bottom: 4px; }
+        #verdict-banner { font-size: 12px; font-weight: 900; }
+
+        /* MOBILE ERROR CONSOLE CONTAINER */
+        #mobile-debug-log {
+            background-color: #1A0505;
+            border: 2px solid #EF4444;
+            color: #FCA5A5;
+            padding: 8px;
+            border-radius: 8px;
             font-family: monospace;
             font-size: 10px;
-            margin-bottom: 4px;
+            max-height: 100px;
+            overflow-y: auto;
+            margin-top: 10px;
+            white-space: pre-wrap;
         }
-        #verdict-banner {
-            font-size: 12px;
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-
-        .state-awaiting { color: #94A3B8; }
-        .state-win { color: #34D399; }
-        .state-profit { color: #2DD4BF; }
-        .state-fair { color: #60A5FA; }
-        .state-loss { color: #F59E0B; }
-        .state-deficit { color: #F87171; }
     </style>
 </head>
 <body class="select-none">
 
+    <!-- INSTANT ERROR CAPTURE SYSTEM -->
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            const consoleBox = document.getElementById("mobile-debug-log");
+            if (consoleBox) {
+                consoleBox.style.display = "block";
+                consoleBox.innerText += `\n🚨 CRASH: ${message} (Line ${lineno})`;
+            }
+            return false;
+        };
+    </script>
+
+    <!-- HEADER PANEL -->
     <header>
         <div>
-            <h1>⚙️ S.I.L.K. Activity Tester</h1>
-            <p>aotrvalue.com Simulation Profile</p>
+            <h1>⚙️ S.I.L.K. Matrix Terminal</h1>
+            <p>Activity Operation Validation</p>
         </div>
         <div class="profile-badge">
-            <span id="username">SILK_Trader</span>
+            <span id="username">Device_Ready</span>
             <div id="avatar">🤖</div>
         </div>
     </header>
 
+    <!-- RUNTIME CONTROLS -->
     <section class="search-section">
         <div class="side-toggles">
-            <button onclick="setTargetSide('A')" id="btn-side-A" class="toggle-btn active">📤 Add to Side A</button>
-            <button onclick="setTargetSide('B')" id="btn-side-B" class="toggle-btn">📥 Add to Side B</button>
+            <button onclick="setTargetSide('A')" id="btn-side-A" class="toggle-btn active-A">📤 Side A</button>
+            <button onclick="setTargetSide('B')" id="btn-side-B" class="toggle-btn">📥 Side B</button>
         </div>
         <div style="position: relative;">
-            <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Type item name (e.g., Fritz, Serum)...">
+            <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Tap here & type item name (e.g., Fritz, Serum)...">
             <div id="autocomplete-box" class="hidden"></div>
         </div>
     </section>
 
+    <!-- BALANCE COLUMNS -->
     <main class="grid-container">
         <div class="bento-card card-side-A">
             <div>
-                <h2 class="card-title title-A">📤 Side A (Giving Inventory)</h2>
+                <h2 class="card-title title-A">📤 Side A (Giving)</h2>
                 <ul id="list-side-A" class="inventory-list"></ul>
             </div>
             <div class="ledger-box">
-                <div class="ledger-row"><span class="ledger-label">Total Value:</span><span id="total-keys-A">🔑 0 Keys</span></div>
+                <div class="ledger-row"><span>Total Value:</span><span id="total-keys-A">🔑 0 Keys</span></div>
                 <div class="ledger-row"><span></span><span id="total-scrolls-A">📜 0.0 Scrolls</span></div>
                 <div class="ledger-row"><span></span><span id="total-viz-A">👺 0.00 Viz</span></div>
                 <div class="divider"></div>
-                <div class="ledger-row"><span class="ledger-label">Inventory Tax:</span><span id="tax-gems-A">💎 0 Gems</span></div>
+                <div class="ledger-row"><span>Required Tax:</span><span id="tax-gems-A">💎 0 Gems</span></div>
                 <div class="ledger-row"><span></span><span id="tax-gold-A">🪙 0 Gold</span></div>
             </div>
         </div>
 
         <div class="bento-card card-side-B">
             <div>
-                <h2 class="card-title title-B">📥 Side B (Getting Inventory)</h2>
+                <h2 class="card-title title-B">📥 Side B (Getting)</h2>
                 <ul id="list-side-B" class="inventory-list"></ul>
             </div>
             <div class="ledger-box">
-                <div class="ledger-row"><span class="ledger-label">Total Value:</span><span id="total-keys-B">🔑 0 Keys</span></div>
+                <div class="ledger-row"><span>Total Value:</span><span id="total-keys-B">🔑 0 Keys</span></div>
                 <div class="ledger-row"><span></span><span id="total-scrolls-B">📜 0.0 Scrolls</span></div>
                 <div class="ledger-row"><span></span><span id="total-viz-B">👺 0.00 Viz</span></div>
                 <div class="divider"></div>
-                <div class="ledger-row"><span class="ledger-label">Inventory Tax:</span><span id="tax-gems-B">💎 0 Gems</span></div>
+                <div class="ledger-row"><span>Required Tax:</span><span id="tax-gems-B">💎 0 Gems</span></div>
                 <div class="ledger-row"><span></span><span id="tax-gold-B">🪙 0 Gold</span></div>
             </div>
         </div>
     </main>
 
+    <!-- DECISION MATRIX BANNER -->
     <footer id="verdict-wrapper">
         <div id="ratio-output">VALUE RATIO: 0.00</div>
-        <div id="verdict-banner" class="state-awaiting">⚖️ Awaiting Trade Elements...</div>
+        <div id="verdict-banner" style="color: #94A3B8;">⚖️ Awaiting Trade Elements...</div>
     </footer>
 
+    <!-- ON-SCREEN CONSOLE VIEWPORT -->
+    <div id="mobile-debug-log" style="display:none;">⚙️ System Diagnostics Active...</div>
+
+    <!-- PURE STANDALONE LOGIC CONTROLLER -->
     <script>
         const itemDatabase = [
             { name: "Colossal Serum", keys: 150, gemsTax: 5000, goldTax: 0 },
@@ -332,43 +309,26 @@
         let currentSide = 'A';
         let tradeState = { sideA: [], sideB: [] };
 
-        // Safe evaluation wrapper for proxy script loads
-        let discordSdk = null;
-        if (window.discord && window.discord.DiscordSDK) {
-            try {
-                discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID");
-            } catch(e) {
-                console.log("SDK wrapper configuration skipped.");
+        function logDebug(msg) {
+            const consoleBox = document.getElementById("mobile-debug-log");
+            if (consoleBox) {
+                consoleBox.style.display = "block";
+                consoleBox.innerText += `\nℹ️ ${msg}`;
             }
         }
-
-        async function initDiscord() {
-            if (!discordSdk) {
-                document.getElementById("username").innerText = "S.I.L.K. Trader";
-                return;
-            }
-            try {
-                await discordSdk.ready();
-                if (discordSdk.instanceId && discordSdk.user) {
-                    document.getElementById("username").innerText = discordSdk.user.username || "Trader";
-                }
-            } catch (err) {
-                document.getElementById("username").innerText = "S.I.L.K. Trader";
-            }
-        }
-        initDiscord();
 
         function setTargetSide(side) {
             currentSide = side;
+            logDebug(`Switched target column to: Side ${side}`);
             const btnA = document.getElementById("btn-side-A");
             const btnB = document.getElementById("btn-side-B");
             
             if (side === 'A') {
-                btnA.className = "toggle-btn active";
+                btnA.className = "toggle-btn active-A";
                 btnB.className = "toggle-btn";
             } else {
                 btnA.className = "toggle-btn";
-                btnB.className = "toggle-btn active";
+                btnB.className = "toggle-btn active-B";
             }
         }
 
@@ -389,19 +349,25 @@
             matches.forEach(item => {
                 const div = document.createElement("div");
                 div.className = "autocomplete-item";
-                div.innerHTML = `<span>${item.name}</span><span>🔑 ${item.keys}</span>`;
-                div.onclick = () => addItemToTrade(item);
+                div.innerHTML = `<span>${item.name}</span><span style="font-family:monospace; color:#94A3B8;">🔑 ${item.keys}</span>`;
+                
+                // Directly hook touch and mouse click events
+                div.addEventListener('click', function() {
+                    addItemToTrade(item);
+                });
                 box.appendChild(div);
             });
             box.classList.remove("hidden");
         }
 
         function addItemToTrade(item) {
+            logDebug(`Adding item: ${item.name}`);
             document.getElementById("autocomplete-box").classList.add("hidden");
             document.getElementById("search-input").value = "";
             
             const targetArray = currentSide === 'A' ? tradeState.sideA : tradeState.sideB;
             const existing = targetArray.find(i => i.name === item.name);
+            
             if (existing) {
                 existing.qty += 1;
             } else {
@@ -441,8 +407,13 @@
                             <span class="item-name">${item.name} <span class="item-qty">x${item.qty}</span></span>
                             <span class="item-subtext">🔑${item.keys} each</span>
                         </div>
-                        <button onclick="removeItem('${side}', ${index})" class="delete-btn">✕</button>
+                        <button class="delete-btn">✕</button>
                     `;
+                    
+                    li.querySelector('.delete-btn').addEventListener('click', function() {
+                        removeItem(side, index);
+                    });
+                    
                     list.appendChild(li);
                 });
 
@@ -468,14 +439,14 @@
             if (vA === 0 && vB === 0) {
                 ratioOutput.innerText = "VALUE RATIO: 0.00";
                 banner.innerText = "⚖️ Awaiting Trade Elements...";
-                banner.className = "state-awaiting";
+                banner.style.color = "#94A3B8";
                 return;
             }
 
             if (vA === 0) {
                 ratioOutput.innerText = "VALUE RATIO: ∞";
                 banner.innerText = "🚀 MASSIVE WIN (INFINITE W)";
-                banner.className = "state-win";
+                banner.style.color = "#34D399";
                 return;
             }
 
@@ -484,21 +455,23 @@
 
             if (ratio >= 1.50) {
                 banner.innerText = "🚀 MASSIVE WIN (HUGE W)";
-                banner.className = "state-win";
+                banner.style.color = "#34D399";
             } else if (ratio >= 1.10) {
                 banner.innerText = "✅ PROFIT (SLIGHT W)";
-                banner.className = "state-profit";
+                banner.style.color = "#2DD4BF";
             } else if (ratio > 0.90) {
                 banner.innerText = "🤝 FAIR TRADE";
-                banner.className = "state-fair";
+                banner.style.color = "#60A5FA";
             } else if (ratio >= 0.60) {
                 banner.innerText = "⚠️ LOSS (SLIGHT L)";
-                banner.className = "state-loss";
+                banner.style.color = "#F59E0B";
             } else {
                 banner.innerText = "🛑 SEVERE DEFICIT (MASSIVE L)";
-                banner.className = "state-deficit";
+                banner.style.color = "#F87171";
             }
         }
+
+        logDebug("Interface Event Listeners completely loaded.");
     </script>
 </body>
 </html>
