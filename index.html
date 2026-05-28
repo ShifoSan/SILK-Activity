@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.I.L.K. Activity Test Shell</title>
+    <script src="/.proxy/jsdelivr/npm/@discord/embedded-app-sdk@1.0.0/dist/index.js"></script>
     <style>
         /* STYLING MATRIX - BYPASSES ALL IFRAME BLOCKS */
         * {
@@ -316,7 +317,6 @@
     </footer>
 
     <script>
-        // Completely eliminated outside dependencies to survive Discord's Proxy
         const itemDatabase = [
             { name: "Colossal Serum", keys: 150, gemsTax: 5000, goldTax: 0 },
             { name: "Berserker Attire", keys: 270, gemsTax: 5625, goldTax: 0 },
@@ -332,9 +332,31 @@
         let currentSide = 'A';
         let tradeState = { sideA: [], sideB: [] };
 
-        // Fully sandboxed mockup SDK initialization block
-        console.log("Running in secure self-contained sandbox mode.");
-        document.getElementById("username").innerText = "S.I.L.K. Trader";
+        // Safe evaluation wrapper for proxy script loads
+        let discordSdk = null;
+        if (window.discord && window.discord.DiscordSDK) {
+            try {
+                discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID");
+            } catch(e) {
+                console.log("SDK wrapper configuration skipped.");
+            }
+        }
+
+        async function initDiscord() {
+            if (!discordSdk) {
+                document.getElementById("username").innerText = "S.I.L.K. Trader";
+                return;
+            }
+            try {
+                await discordSdk.ready();
+                if (discordSdk.instanceId && discordSdk.user) {
+                    document.getElementById("username").innerText = discordSdk.user.username || "Trader";
+                }
+            } catch (err) {
+                document.getElementById("username").innerText = "S.I.L.K. Trader";
+            }
+        }
+        initDiscord();
 
         function setTargetSide(side) {
             currentSide = side;
