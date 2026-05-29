@@ -62,7 +62,7 @@
     <script type="module">
         import { WelcomePage } from './pages/welcome.js';
 
-        // Advanced Web Audio API Engine Architecture
+        // Advanced Web Audio API Engine Architecture with Loop Safety Gates
         window.silkAudio = {
             bgMusic: new Audio('./assets/bg-music.ogg'),
             clickSfx: new Audio('./assets/click-sfx.ogg'),
@@ -71,46 +71,53 @@
             isGraphConnected: false,
             
             init() {
-                this.bgMusic.loop = true;
-                this.bgMusic.volume = 0; // Starts silent for the fluid fade script
+                this.bgMusic.loop = true; // Primary native looping property
+                this.bgMusic.volume = 0;   // Starts silent for fluid crossfade entry
                 this.bgMusic.preload = 'auto';
                 this.clickSfx.preload = 'auto';
                 
-                // Set the clip sound effects to a nice crisp structural volume balance
+                // Clear click sound effects volume scale balance
                 this.clickSfx.volume = 0.5;
+
+                // Programmatic Loop Safety Gate: Protects against mobile audio graph interruptions
+                this.bgMusic.addEventListener('ended', () => {
+                    console.log("Audio loop threshold passed. Executing seamless rewind restart sequence...");
+                    this.bgMusic.currentTime = 0;
+                    this.bgMusic.play().catch(err => console.log("Loop restart exception skipped."));
+                });
             },
             
             fadeInMusic() {
-                // Initialize the audio processing nodes on the exact user touch gesture step
+                // Initialize processing layout tracks on the user interaction trigger gesture step
                 if (!this.isGraphConnected) {
                     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
                     if (AudioContextClass) {
                         this.audioCtx = new AudioContextClass();
                         
-                        // Wrap the background music node into a stream node
+                        // Map music track source element into audio pipeline graph context
                         const source = this.audioCtx.createMediaElementSource(this.bgMusic);
                         this.filterNode = this.audioCtx.createBiquadFilter();
                         
-                        // Configure Low-Pass Filter parameters to create a muffled equalizer effect
+                        // Configure Low-Pass Filter to handle the muffled ambient style effect
                         this.filterNode.type = 'lowpass';
-                        this.filterNode.frequency.value = 650; // Lower value = more muffled cinematic rumble
+                        this.filterNode.frequency.value = 650; // Controls muffling tone parameters
                         
-                        // Route: Music File -> Equalizer Node -> Speakers
+                        // Connect: Audio Clip Stream -> Equalizer Node Filter -> Device System Outputs
                         source.connect(this.filterNode);
                         this.filterNode.connect(this.audioCtx.destination);
                         this.isGraphConnected = true;
                     }
                 }
 
-                // Wake up audio timeline parameters inside mobile WebView architectures
+                // Resume audio processing tree if suspended by mobile power saving frameworks
                 if (this.audioCtx && this.audioCtx.state === 'suspended') {
                     this.audioCtx.resume();
                 }
 
-                this.bgMusic.play().catch(err => console.log("Audio pipeline bypass active."));
+                this.bgMusic.play().catch(err => console.log("Audio pipeline active."));
                 
                 let vol = 0;
-                const targetMaxVolume = 0.18; // Locked safely right between your 15% and 20% limit!
+                const targetMaxVolume = 0.18; // Soft atmospheric volume floor ceiling (18% scale)
                 
                 const fadeInterval = setInterval(() => {
                     if (vol < targetMaxVolume) {
@@ -119,16 +126,16 @@
                     } else {
                         clearInterval(fadeInterval);
                     }
-                }, 120); // Smooth volume stepping ticks
+                }, 120);
             },
             
             playClick() {
                 this.clickSfx.currentTime = 0;
-                this.clickSfx.play().catch(err => console.log("SFX click tracked."));
+                this.clickSfx.play().catch(err => console.log("SFX click executed safely."));
             }
         };
 
-        // Fire structural audio setups
+        // Initialize audio engine parameters
         window.silkAudio.init();
 
         let discordSdk = null;
@@ -140,7 +147,7 @@
             if (discordSdk) {
                 try { await discordSdk.ready(); } catch(err) {}
             }
-            // Mount initialization components
+            // Mount application starting step node
             document.getElementById('app-viewport').innerHTML = WelcomePage.render();
             WelcomePage.init();
         }
