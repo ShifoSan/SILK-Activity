@@ -1,11 +1,13 @@
+import { MenuPage } from './menu.js';
+
 export const WelcomePage = {
     render() {
         return `
-            <div id="page-welcome" class="page-layer" style="text-align: center; cursor: pointer; padding: 20px;">
-                <h1 style="font-family: 'Viaoda Libre', serif; font-size: 2.5rem; font-weight: normal; color: #38BDF8; margin-bottom: 12px; letter-spacing: 0.05em; text-shadow: 0 0 20px rgba(56,189,248,0.2);">
+            <div id="page-welcome" class="page-layer" style="text-align: center; cursor: pointer; padding: 20px; justify-content: center;">
+                <h1 style="font-family: 'Viaoda Libre', serif; font-size: 2.6rem; font-weight: normal; color: #38BDF8; margin-bottom: 14px; letter-spacing: 0.04em; text-shadow: 0 0 30px rgba(56,189,248,0.15);">
                     Welcome to SILK Trading Center
                 </h1>
-                <p style="font-size: 0.9rem; color: #94A3B8; opacity: 0.6; letter-spacing: 0.1em; text-transform: uppercase;">
+                <p style="font-size: 0.85rem; color: #94A3B8; opacity: 0.5; letter-spacing: 0.12em; text-transform: uppercase;">
                     Click anywhere to continue
                 </p>
             </div>
@@ -13,25 +15,22 @@ export const WelcomePage = {
     },
     
     init() {
-        const welcomeScreen = document.getElementById('page-welcome');
+        const welcomeLayer = document.getElementById('page-welcome');
         
-        // Attaching a secure event listener via JavaScript layout rules to pass CSP boundaries
-        welcomeScreen.addEventListener('click', function() {
-            console.log("User touch recorded. Initializing audio loop and core layout layers...");
+        welcomeLayer.addEventListener('click', function() {
+            // Unlocking user-gesture validation rules. Fade up background music loop!
+            window.silkAudio.fadeInMusic();
             
-            // 1. Audio Activation Logic Placeholder
-            // (We will write the exact audio fade wrapper logic as soon as you choose your track names!)
+            // Gracefully reduce layer opacity via CSS transitions
+            welcomeLayer.classList.add('fade-out');
             
-            // 2. Clear out the Welcome Layer gracefully using CSS Opacity
-            welcomeScreen.classList.add('fade-out');
-            
-            // Clean up elements from DOM stack after fade transition finishes
             setTimeout(() => {
-                welcomeScreen.classList.add('hidden');
+                welcomeLayer.classList.add('hidden');
                 
-                // Trigger the next step: Initialize and mount the main menu layout node
-                // (We will import your main menu canvas file here next)
-                console.log("Welcome module exited cleanly. Mounting Main Menu grid elements...");
+                // Mount and boot up the landscape main menu module interface dynamically
+                const viewport = document.getElementById('app-viewport');
+                viewport.innerHTML = MenuPage.render();
+                MenuPage.init();
             }, 500);
         });
     }
