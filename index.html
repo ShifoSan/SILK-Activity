@@ -62,39 +62,73 @@
     <script type="module">
         import { WelcomePage } from './pages/welcome.js';
 
-        // Global Audio Management Engine - Cached safely in global window tree
+        // Advanced Web Audio API Engine Architecture
         window.silkAudio = {
             bgMusic: new Audio('./assets/bg-music.ogg'),
             clickSfx: new Audio('./assets/click-sfx.ogg'),
+            audioCtx: null,
+            filterNode: null,
+            isGraphConnected: false,
             
             init() {
                 this.bgMusic.loop = true;
-                this.bgMusic.volume = 0; // Starts completely silent for the fade wrapper
+                this.bgMusic.volume = 0; // Starts silent for the fluid fade script
                 this.bgMusic.preload = 'auto';
                 this.clickSfx.preload = 'auto';
+                
+                // Set the clip sound effects to a nice crisp structural volume balance
+                this.clickSfx.volume = 0.5;
             },
             
             fadeInMusic() {
-                this.bgMusic.play().catch(err => console.log("Audio target boot error:", err));
+                // Initialize the audio processing nodes on the exact user touch gesture step
+                if (!this.isGraphConnected) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) {
+                        this.audioCtx = new AudioContextClass();
+                        
+                        // Wrap the background music node into a stream node
+                        const source = this.audioCtx.createMediaElementSource(this.bgMusic);
+                        this.filterNode = this.audioCtx.createBiquadFilter();
+                        
+                        // Configure Low-Pass Filter parameters to create a muffled equalizer effect
+                        this.filterNode.type = 'lowpass';
+                        this.filterNode.frequency.value = 650; // Lower value = more muffled cinematic rumble
+                        
+                        // Route: Music File -> Equalizer Node -> Speakers
+                        source.connect(this.filterNode);
+                        this.filterNode.connect(this.audioCtx.destination);
+                        this.isGraphConnected = true;
+                    }
+                }
+
+                // Wake up audio timeline parameters inside mobile WebView architectures
+                if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
+                }
+
+                this.bgMusic.play().catch(err => console.log("Audio pipeline bypass active."));
+                
                 let vol = 0;
+                const targetMaxVolume = 0.18; // Locked safely right between your 15% and 20% limit!
+                
                 const fadeInterval = setInterval(() => {
-                    if (vol < 0.4) { // Limits volume max scale to 40% so it acts as ambient music
-                        vol += 0.04;
+                    if (vol < targetMaxVolume) {
+                        vol += 0.02;
                         this.bgMusic.volume = parseFloat(vol.toFixed(2));
                     } else {
                         clearInterval(fadeInterval);
                     }
-                }, 150); // Fluid volume stepping loop over ~1.5 seconds
+                }, 120); // Smooth volume stepping ticks
             },
             
             playClick() {
-                // Reset audio play timeline pointer to instant trigger if users spam click targets
                 this.clickSfx.currentTime = 0;
-                this.clickSfx.play().catch(err => console.log("SFX skip flag triggered."));
+                this.clickSfx.play().catch(err => console.log("SFX click tracked."));
             }
         };
 
-        // Fire audio configuration channels
+        // Fire structural audio setups
         window.silkAudio.init();
 
         let discordSdk = null;
@@ -106,7 +140,7 @@
             if (discordSdk) {
                 try { await discordSdk.ready(); } catch(err) {}
             }
-            // Inject and activate the Welcome Module
+            // Mount initialization components
             document.getElementById('app-viewport').innerHTML = WelcomePage.render();
             WelcomePage.init();
         }
