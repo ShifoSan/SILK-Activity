@@ -6,21 +6,17 @@
     <title>S.I.L.K. Trading Center</title>
     <script src="/.proxy/jsdelivr/npm/@discord/embedded-app-sdk@1.0.0/dist/index.js"></script>
     <style>
-        /* NATIVE STYLING MATRIX - BYPASSES DISCORD IFRAME RESTRICTIONS */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        
-        /* Registering your local Viaoda Libre premium font asset */
         @font-face {
             font-family: 'Viaoda Libre';
             src: url('./fonts/ViaodaLibre-Regular.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
-
         body {
             background-color: #050811;
             color: #E2E8F0;
@@ -31,8 +27,6 @@
             justify-content: center;
             align-items: center;
         }
-
-        /* Responsive Viewport Shell - Locks strictly to the containment grid */
         #app-viewport {
             width: 100%;
             height: 100vh;
@@ -41,8 +35,6 @@
             justify-content: center;
             align-items: center;
         }
-
-        /* Universal module animation classes */
         .page-layer {
             position: absolute;
             width: 100%;
@@ -70,27 +62,55 @@
     <script type="module">
         import { WelcomePage } from './pages/welcome.js';
 
-        // Initialize Discord Embedded SDK Connection Safely
+        // Global Audio Management Engine - Cached safely in global window tree
+        window.silkAudio = {
+            bgMusic: new Audio('./assets/bg-music.ogg'),
+            clickSfx: new Audio('./assets/click-sfx.ogg'),
+            
+            init() {
+                this.bgMusic.loop = true;
+                this.bgMusic.volume = 0; // Starts completely silent for the fade wrapper
+                this.bgMusic.preload = 'auto';
+                this.clickSfx.preload = 'auto';
+            },
+            
+            fadeInMusic() {
+                this.bgMusic.play().catch(err => console.log("Audio target boot error:", err));
+                let vol = 0;
+                const fadeInterval = setInterval(() => {
+                    if (vol < 0.4) { // Limits volume max scale to 40% so it acts as ambient music
+                        vol += 0.04;
+                        this.bgMusic.volume = parseFloat(vol.toFixed(2));
+                    } else {
+                        clearInterval(fadeInterval);
+                    }
+                }, 150); // Fluid volume stepping loop over ~1.5 seconds
+            },
+            
+            playClick() {
+                // Reset audio play timeline pointer to instant trigger if users spam click targets
+                this.clickSfx.currentTime = 0;
+                this.clickSfx.play().catch(err => console.log("SFX skip flag triggered."));
+            }
+        };
+
+        // Fire audio configuration channels
+        window.silkAudio.init();
+
         let discordSdk = null;
         if (window.discord && window.discord.DiscordSDK) {
-            try {
-                discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID");
-            } catch(e) {
-                console.log("Discord Activity Framework initialized.");
-            }
+            try { discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID"); } catch(e) {}
         }
 
         async function bootActivity() {
             if (discordSdk) {
-                try { await discordSdk.ready(); } catch(err) { console.log("Local browser fallback active."); }
+                try { await discordSdk.ready(); } catch(err) {}
             }
-            
-            // Mount the Welcome screen template safely into the base view layer
+            // Inject and activate the Welcome Module
             document.getElementById('app-viewport').innerHTML = WelcomePage.render();
             WelcomePage.init();
         }
 
-        // Fire the application pipeline
         bootActivity();
     </script>
 </body>
