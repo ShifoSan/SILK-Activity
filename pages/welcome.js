@@ -8,7 +8,7 @@ export const WelcomePage = {
                 cursor: pointer; 
                 padding: 24px; 
                 justify-content: center;
-                background: linear-gradient(135deg, #1C0F0A 0%, #351C10 50%, #120905 100%);
+                background: radial-gradient(circle at center, #351C10 0%, #1C0F0A 45%, #050302 100%);
                 position: absolute;
                 width: 100%;
                 height: 100%;
@@ -17,6 +17,7 @@ export const WelcomePage = {
                 flex-direction: column;
                 align-items: center;
                 z-index: 10;
+                transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease-in-out;
             ">
                 
                 <style>
@@ -91,58 +92,69 @@ export const WelcomePage = {
                         100% { transform: translate3d(-15vw, 75vh, 300px) rotateX(480deg) rotateY(-300deg); opacity: 0; }
                     }
 
-                    /* Speed and Timing Distribution Vectors */
                     .b1 { animation: travelBox1 15s linear infinite; top: 0; left: 0; }
                     .b2 { animation: travelBox2 22s linear infinite; top: 0; left: 0; }
                     .b3 { animation: travelBox3 18s linear infinite; top: 0; left: 0; }
                     .b4 { animation: travelBox4 26s linear infinite; top: 0; left: 0; }
 
-                    /* Smooth Text Pulse Feedback loop */
+                    /* Cinematic Foreground text fade-in rise transition */
+                    @keyframes cinematicIntroText {
+                        0% { opacity: 0; transform: translateY(15px); filter: blur(4px); }
+                        100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+                    }
+
+                    /* Smooth Text Pulse Feedback loop for prompt tracking */
                     @keyframes promptPulse {
-                        0%, 100% { opacity: 0.3; transform: scale(1); }
-                        50% { opacity: 0.85; transform: scale(1.02); }
+                        0%, 100% { opacity: 0.25; transform: scale(1); }
+                        50% { opacity: 0.8; transform: scale(1.015); }
+                    }
+
+                    /* Class rule to trigger performance engine unmounting */
+                    .halt-animation * {
+                        animation: none !important;
                     }
                 </style>
 
-                <div class="matrix-scene3d">
+                <div id="welcome-matrix-bg" class="matrix-scene3d">
                     <div class="box3d-wrapper b1"><div class="box3d-body"><div class="box3d-face face-front"></div><div class="box3d-face face-back"></div><div class="box3d-face face-right"></div><div class="box3d-face face-left"></div><div class="box3d-face face-top"></div><div class="box3d-face face-bottom"></div></div></div>
                     <div class="box3d-wrapper b2"><div class="box3d-body"><div class="box3d-face face-front"></div><div class="box3d-face face-back"></div><div class="box3d-face face-right"></div><div class="box3d-face face-left"></div><div class="box3d-face face-top"></div><div class="box3d-face face-bottom"></div></div></div>
                     <div class="box3d-wrapper b3"><div class="box3d-body"><div class="box3d-face face-front"></div><div class="box3d-face face-back"></div><div class="box3d-face face-right"></div><div class="box3d-face face-left"></div><div class="box3d-face face-top"></div><div class="box3d-face face-bottom"></div></div></div>
                     <div class="box3d-wrapper b4"><div class="box3d-body"><div class="box3d-face face-front"></div><div class="box3d-face face-back"></div><div class="box3d-face face-right"></div><div class="box3d-face face-left"></div><div class="box3d-face face-top"></div><div class="box3d-face face-bottom"></div></div></div>
                 </div>
 
-                <div style="position: relative; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="position: relative; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: cinematicIntroText 1s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;">
                     
                     <h1 style="
                         font-family: 'Viaoda Libre', serif; 
-                        font-size: 2.75rem; 
+                        font-size: 2.9rem; 
                         font-weight: normal; 
                         color: #AA7C11; 
-                        margin-bottom: 4px; 
-                        letter-spacing: 0.05em; 
-                        text-shadow: 0px 4px 12px rgba(0,0,0,0.8);
+                        margin-bottom: 2px; 
+                        letter-spacing: 0.08em; 
+                        text-shadow: 0px 5px 15px rgba(0,0,0,0.95);
                     ">
                         Welcome to SILK
                     </h1>
                     
                     <h2 style="
                         font-family: 'Viaoda Libre', serif;
-                        font-size: 1.35rem;
+                        font-size: 1.3rem;
                         font-weight: normal;
                         color: #B5924B;
-                        margin-bottom: 60px;
-                        letter-spacing: 0.08em;
-                        text-shadow: 0px 2px 8px rgba(0,0,0,0.8);
+                        margin-bottom: 75px;
+                        letter-spacing: 0.12em;
+                        opacity: 0.85;
+                        text-shadow: 0px 3px 10px rgba(0,0,0,0.95);
                     ">
                         Trading Center
                     </h2>
                     
                     <p style="
-                        font-size: 0.85rem; 
+                        font-size: 0.8rem; 
                         color: #000000; 
-                        letter-spacing: 0.15em; 
+                        letter-spacing: 0.18em; 
                         text-transform: uppercase;
-                        animation: promptPulse 2.2s ease-in-out infinite;
+                        animation: promptPulse 2s ease-in-out infinite;
                         font-weight: 900;
                     ">
                         Click anywhere to continue
@@ -155,22 +167,29 @@ export const WelcomePage = {
     
     init() {
         const welcomeLayer = document.getElementById('page-welcome');
+        const matrixBackground = document.getElementById('welcome-matrix-bg');
         
         welcomeLayer.addEventListener('click', function() {
-            // Satisfy WebView user gestures to wake up track fade-in loops safely
+            // Wake up audio equalizer graphs inside mobile WebView architectures securely
             window.silkAudio.fadeInMusic();
             
-            // Initiate exit opacity transition configurations
-            welcomeLayer.classList.add('fade-out');
+            // 🎬 ENHANCEMENT 3: ADVANCED EXIT TRANSITION SCENE
+            // Smoothly expands and fades outward to blend perfectly into the menu's background loop video
+            welcomeLayer.style.transform = "scale(1.06)";
+            welcomeLayer.style.opacity = "0";
+            welcomeLayer.style.pointerEvents = "none";
             
             setTimeout(() => {
+                // 🔋 ENHANCEMENT 4: BATTERY SAVER METHOD
+                // Force-stops all underlying CSS loop iterations to protect device processors
+                matrixBackground.classList.add('halt-animation');
                 welcomeLayer.classList.add('hidden');
                 
-                // Mount the recalibrated pixel-perfect 16:9 main dashboard menu layout node
+                // Render the finalized main menu environment stage layout
                 const viewport = document.getElementById('app-viewport');
                 viewport.innerHTML = MenuPage.render();
                 MenuPage.init();
-            }, 500);
+            }, 550); // Matches the out-fade timing threshold sequence perfectly
         });
     }
 };
