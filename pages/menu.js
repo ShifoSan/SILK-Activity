@@ -1,19 +1,70 @@
 export const MenuPage = {
     render() {
         return `
-            <div id="page-menu" class="page-layer" style="opacity: 0; transition: opacity 0.5s ease-in-out; width: 100%; height: 100vh; justify-content: center; align-items: center; background-color: #050811;">
+            <div id="page-menu" class="page-layer" style="
+                opacity: 0; 
+                transition: opacity 0.5s ease-in-out; 
+                width: 100%; 
+                height: 100vh; 
+                justify-content: center; 
+                align-items: center; 
+                background-color: #000000;
+                display: flex;
+            ">
                 
-                <div id="menu-aspect-container" style="position: relative; width: min(100vw, calc(100vh * 16 / 9)); height: min(100vh, calc(100vw * 9 / 16)); aspect-ratio: 16 / 9; display: block;">
+                <div style="
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-evenly;
+                    align-items: center;
+                    width: 100%;
+                    max-width: 800px;
+                    padding: 24px;
+                ">
                     
-                    <img src="./assets/main_menu_background.png" alt="S.I.L.K. Center Hub" style="width: 100%; height: 100%; object-fit: fill; display: block;" />
+                    <div id="zone-values" class="menu-card-wrapper">
+                        <img src="./assets/value.png" alt="Values" class="menu-card-img" />
+                    </div>
                     
-                    <div id="zone-values" style="position: absolute; left: 30.5%; top: 32.3%; width: 11.1%; height: 35.6%; cursor: pointer; border-radius: 8px; background-color: rgba(255,255,255,0); transition: background-color 0.15s ease;" ontouchstart="this.style.backgroundColor='rgba(56,189,248,0.1)'" ontouchend="this.style.backgroundColor='rgba(255,255,255,0)'"></div>
+                    <div id="zone-compare" class="menu-card-wrapper">
+                        <img src="./assets/compare.png" alt="Compare" class="menu-card-img" />
+                    </div>
                     
-                    <div id="zone-compare" style="position: absolute; left: 45.0%; top: 32.3%; width: 10.9%; height: 35.6%; cursor: pointer; border-radius: 8px; background-color: rgba(255,255,255,0); transition: background-color 0.15s ease;" ontouchstart="this.style.backgroundColor='rgba(249,115,22,0.1)'" ontouchend="this.style.backgroundColor='rgba(255,255,255,0)'"></div>
-                    
-                    <div id="zone-trading" style="position: absolute; left: 58.8%; top: 32.3%; width: 11.2%; height: 35.6%; cursor: pointer; border-radius: 8px; background-color: rgba(255,255,255,0); transition: background-color 0.15s ease;" ontouchstart="this.style.backgroundColor='rgba(16,185,129,0.1)'" ontouchend="this.style.backgroundColor='rgba(255,255,255,0)'"></div>
+                    <div id="zone-trading" class="menu-card-wrapper">
+                        <img src="./assets/trade.png" alt="Trading" class="menu-card-img" />
+                    </div>
                     
                 </div>
+
+                <style>
+                    /* Binds the container frames to scale smoothly on mobile screens */
+                    .menu-card-wrapper {
+                        width: 25vw;
+                        max-width: 180px;
+                        height: auto;
+                        cursor: pointer;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s ease;
+                        -webkit-tap-highlight-color: transparent;
+                    }
+
+                    /* Image asset properties preserving original pixel resolution geometry */
+                    .menu-card-img {
+                        width: 100%;
+                        height: auto;
+                        object-fit: contain;
+                        display: block;
+                    }
+
+                    /* Premium physical button click feedback animation for smartphones */
+                    .menu-card-wrapper:active {
+                        transform: scale(0.94);
+                        filter: brightness(0.8);
+                    }
+                </style>
+
             </div>
         `;
     },
@@ -21,29 +72,29 @@ export const MenuPage = {
     init() {
         const menuLayer = document.getElementById('page-menu');
         
-        // Trigger smooth entry animation opacity crossfade
+        // Trigger clean page crossfade entrance transition
         setTimeout(() => { menuLayer.style.opacity = "1"; }, 50);
 
-        // Programmatic Event Binding Strategy (Bypasses Content Security Policy Blocks)
+        // Programmatic Event Handling Listeners (Bypasses Iframe Sandbox CSP Blocks)
         document.getElementById('zone-values').addEventListener('click', function() {
             window.silkAudio.playClick();
-            console.log("Navigation Execution -> Transitioning layout stack to: S.I.L.K. Value Engine");
+            console.log("Navigation Pipeline Triggered -> Sourcing Item Value Engine Template...");
             
-            // Next Phase: Route user to value checker page component
+            // Next Phase Route Entry -> Mount values panel interface here
         });
 
         document.getElementById('zone-compare').addEventListener('click', function() {
             window.silkAudio.playClick();
-            console.log("Navigation Execution -> Transitioning layout stack to: Comparative Trade Matrix");
+            console.log("Navigation Pipeline Triggered -> Initializing Local Trade Comparison Workspace...");
             
-            // Next Phase: Route user to trade comparison layout view
+            // Next Phase Route Entry -> Mount trade calculator view components here
         });
 
         document.getElementById('zone-trading').addEventListener('click', function() {
             window.silkAudio.playClick();
-            console.log("Navigation Execution -> Pulling shared instance vectors for Global Ads Bulletin Board");
+            console.log("Navigation Pipeline Triggered -> Initializing Live Synchronized Bulletin Board...");
             
-            // Next Phase: Synchronize MongoDB routes for online trading bulletin board
+            // Next Phase Route Entry -> Build shared instance MongoDB channels here
         });
     }
 };
