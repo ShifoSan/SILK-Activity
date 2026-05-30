@@ -11,7 +11,7 @@ export const MenuPage = {
                 overflow: hidden;
             ">
                 
-                <canvas id="menu-starfield-canvas" style="
+                <canvas id="menu-coalesce-canvas" style="
                     position: absolute;
                     top: 0;
                     left: 0;
@@ -27,11 +27,22 @@ export const MenuPage = {
                     left: 0;
                     width: 100%;
                     height: 100%;
+                    background: radial-gradient(circle at center, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.85) 100%);
+                    z-index: 2;
+                    pointer-events: none;
+                "></div>
+
+                <div style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     z-index: 10;
-                    pointer-events: none; /* Allows canvas context clicks to slide through free viewport spaces */
+                    pointer-events: none; /* Passes taps through screen empty spaces seamlessly */
                 ">
                     
                     <div style="
@@ -39,11 +50,11 @@ export const MenuPage = {
                         flex-direction: row;
                         justify-content: center;
                         align-items: center;
-                        gap: 32px; /* Precision gap spacing between your compact button shapes */
+                        gap: 32px; /* Fixed precision button column spacing */
                         width: 100%;
                         max-width: 900px;
                         padding: 24px;
-                        pointer-events: auto; /* Re-locks touch execution strictly over your custom images */
+                        pointer-events: auto; /* Re-enables touch listeners strictly for your cards */
                     ">
                         
                         <div id="zone-values" class="menu-card-wrapper">
@@ -62,7 +73,7 @@ export const MenuPage = {
                 </div>
 
                 <style>
-                    /* COMPACT ASPECT PROPORTIONS - Evaluated cleanly from your manual calibrations */
+                    /* COMPACT ASPECT PROPORTIONS - Preserving your 11% responsive width look */
                     .menu-card-wrapper {
                         width: 11.5vw;
                         max-width: 120px;
@@ -73,7 +84,7 @@ export const MenuPage = {
                         align-items: center;
                         transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s ease;
                         -webkit-tap-highlight-color: transparent;
-                        filter: drop-shadow(0 15px 30px rgba(0,0,0,0.85));
+                        filter: drop-shadow(0 15px 35px rgba(0,0,0,0.9));
                     }
 
                     .menu-card-img {
@@ -83,7 +94,7 @@ export const MenuPage = {
                         display: block;
                     }
 
-                    /* Interactive tactile scaling physics applied on finger contact clicks */
+                    /* Interactive tactile scale compression physics on finger touch actions */
                     .menu-card-wrapper:active {
                         transform: scale(0.92);
                         filter: brightness(0.75) drop-shadow(0 4px 8px rgba(0,0,0,0.9));
@@ -97,112 +108,125 @@ export const MenuPage = {
     init() {
         const menuLayer = document.getElementById('page-menu');
         
-        // Handle subtle display entrance opacity crossfade sequence
+        // Handle subtle container element entry crossfade sequence
         setTimeout(() => { menuLayer.style.opacity = "1"; }, 50);
 
         // =====================================================================
-        // 🚀 HIGH-DENSITY MULTI-COLOR STARFIELD SPACE ENGINE PIPELINE
+        // 🌌 COALESCE ORGANIC FLUID BACKGROUND MATH PIPELINE
         // =====================================================================
-        const canvas = document.getElementById('menu-starfield-canvas');
+        const canvas = document.getElementById('menu-coalesce-canvas');
         const ctx = canvas.getContext('2d');
         
-        let starsArray = [];
-        const maxStarsCount = 450; // Increased scale density for a spectacular cinematic travel grid
-        const travelSpeed = 4.2;    // Balanced warp timeline speed index
+        let blobsArray = [];
+        const blobCeilingCount = 14; // Low object count + massive radii = optimal physics performance on mobile
         let animationFrameId = null;
 
-        // Curated Palette Array representing a deep cosmic battle mesh environment
-        const spacePalette = ['#B5924B', '#B5924B', '#38BDF8', '#F97316', '#E2E8F0'];
+        // Curated Palette mapping your antique golds, path cyans, and dark browns
+        const coalesceColors = [
+            'rgba(181, 146, 75, 0.15)',  // Muted Antique Gold
+            'rgba(165, 124, 50, 0.12)',  // Darker Warm Gold
+            '56, 189, 248',              // Raw Cyan components for structural blending
+            'rgba(34, 20, 14, 0.25)'     // Deep Scout Cloak Brown
+        ];
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
-        
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Build geometric coordinate properties matching mobile aspect scaling loops
-        function createStarField() {
-            starsArray = [];
-            for (let i = 0; i < maxStarsCount; i++) {
-                starsArray.push({
-                    x: (Math.random() - 0.5) * canvas.width * 2,
-                    y: (Math.random() - 0.5) * canvas.height * 2,
-                    z: Math.random() * canvas.width,
-                    size: Math.random() * 1.3 + 0.4,
-                    // Assigns a persistent random color from our curated thematic space pool
-                    color: spacePalette[Math.floor(Math.random() * spacePalette.length)]
+        // Build floating vector coordinates tracking fluid canvas parameters
+        function generateAmbientBlobs() {
+            blobsArray = [];
+            for (let i = 0; i < blobCeilingCount; i++) {
+                // Large scale circles floating together programmatically
+                const baseRadius = Math.random() * (canvas.width * 0.22) + (canvas.width * 0.12);
+                
+                blobsArray.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.45, // Micro adjustments create slow fluid motion
+                    vy: (Math.random() - 0.5) * 0.45,
+                    radius: baseRadius,
+                    // Handle complex fluid composite blending rules color assignments
+                    color: coalesceColors[i % coalesceColors.length],
+                    isCyan: (i % coalesceColors.length === 2)
                 });
             }
         }
 
-        // Draw interval frame rendering loops
-        function updateAndDrawStars() {
-            // Semi-translucent sweep redraw generates soft trailing speed line paths
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.18)'; 
+        // Continual rendering sequence handling drawing frames to device screens
+        function animateCoalesceField() {
+            // Render full background clear sweep over each processing tick
+            ctx.fillStyle = '#020407';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
+            // Establish standard color injection composites mirroring the template layout
+            ctx.globalCompositeOperation = 'screen';
 
-            for (let i = 0; i < starsArray.length; i++) {
-                let star = starsArray[i];
+            for (let i = 0; i < blobsArray.length; i++) {
+                let blob = blobsArray[i];
+
+                // Transition node vectors along fluid positions
+                blob.x += blob.vx;
+                blob.y += blob.vy;
+
+                // Handle canvas extreme margin collision rebound buffers
+                if (blob.x - blob.radius > canvas.width) blob.x = -blob.radius;
+                if (blob.x + blob.radius < 0) blob.x = canvas.width + blob.radius;
+                if (blob.y - blob.radius > canvas.height) blob.y = -blob.radius;
+                if (blob.y + blob.radius < 0) blob.y = canvas.height + blob.radius;
+
+                // Create organic glowing gradients mimicking Coalesce fluid transitions
+                const gradient = ctx.createRadialGradient(blob.x, blob.y, 0, blob.x, blob.y, blob.radius);
                 
-                // Accelerate the node down along the perspective plane
-                star.z -= travelSpeed;
-
-                // Infinite boundary restart loop reset parameters
-                if (star.z <= 0) {
-                    star.x = (Math.random() - 0.5) * canvas.width * 2;
-                    star.y = (Math.random() - 0.5) * canvas.height * 2;
-                    star.z = canvas.width;
+                if (blob.isCyan) {
+                    gradient.addColorStop(0, 'rgba(' + blob.color + ', 0.08)');
+                    gradient.addColorStop(0.5, 'rgba(' + blob.color + ', 0.03)');
+                    gradient.addColorStop(1, 'rgba(' + blob.color + ', 0)');
+                } else {
+                    gradient.addColorStop(0, blob.color);
+                    gradient.addColorStop(1, 'rgba(0,0,0,0)');
                 }
 
-                // 3D Perspective Matrix Conversion Math
-                const screenX = (star.x / star.z) * centerX + centerX;
-                const screenY = (star.y / star.z) * centerY + centerY;
-                
-                // Dynamically enlarge coordinate dots as they approach screen edges
-                const starRadius = (1 - star.z / canvas.width) * star.size * 2.8;
-
-                // Push vector parameters directly into hardware frame pipeline buffers
-                if (screenX >= 0 && screenX <= canvas.width && screenY >= 0 && screenY <= canvas.height) {
-                    ctx.beginPath();
-                    ctx.arc(screenX, screenY, Math.max(0.1, starRadius), 0, Math.PI * 2);
-                    ctx.fillStyle = star.color;
-                    ctx.fill();
-                }
+                ctx.beginPath();
+                ctx.arc(blob.x, blob.y, blob.radius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
             }
 
-            animationFrameId = requestAnimationFrame(updateAndDrawStars);
+            // Reset operational context layer properties to baseline standard values
+            ctx.globalCompositeOperation = 'source-over';
+
+            animationFrameId = requestAnimationFrame(animateCoalesceField);
         }
 
-        createStarField();
-        updateAndDrawStars();
+        generateAmbientBlobs();
+        animateCoalesceField();
 
         // =====================================================================
-        // 🔒 CSP COMPLIANT APP STEP CONTROL BUTTON CLICKS
+        // 🔒 SECURE APPLICATION PROGRAMMATIC LINK LISTENERS
         // =====================================================================
-        // Note: Freezing animations on button clicks has been completely removed!
-        // The stars will keep traveling smoothly in the background while audio clips fire.
-        
         document.getElementById('zone-values').addEventListener('click', function() {
             window.silkAudio.playClick();
-            console.log("Navigation Pipeline Active -> Fetching local structures for: Value Page");
-            // Next Phase Route Matrix Entry -> Fade layout and launch values.js viewport context here
+            cancelAnimationFrame(animationFrameId); // Prevents performance leaks after exiting
+            window.removeEventListener('resize', resizeCanvas);
+            console.log("Navigation Triggered -> Initializing Value Page view frame matrix...");
         });
 
         document.getElementById('zone-compare').addEventListener('click', function() {
             window.silkAudio.playClick();
-            console.log("Navigation Pipeline Active -> Generating local structures for: Comparison Page");
-            // Next Phase Route Matrix Entry -> Fade layout and launch compare.js calculation layers here
+            cancelAnimationFrame(animationFrameId);
+            window.removeEventListener('resize', resizeCanvas);
+            console.log("Navigation Triggered -> Initializing Compare Page view frame matrix...");
         });
 
         document.getElementById('zone-trading').addEventListener('click', function() {
             window.silkAudio.playClick();
-            console.log("Navigation Pipeline Active -> Activating cloud clusters for: Global Trade Bulletin Board");
-            // Next Phase Route Matrix Entry -> Fade layout and sync shared instance MongoDB collections here
+            cancelAnimationFrame(animationFrameId);
+            window.removeEventListener('resize', resizeCanvas);
+            console.log("Navigation Triggered -> Syncing global database clusters for Advertising Board...");
         });
     }
 };
