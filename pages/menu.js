@@ -9,18 +9,33 @@ export const MenuPage = {
                 position: relative;
                 background-color: #000000;
                 overflow: hidden;
+                display: flex;
             ">
                 
-                <iframe src="./bg-coalesce.html" style="
+                <video autoplay loop muted playsinline style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    object-fit: cover; /* Eliminates side letterboxing completely */
+                    filter: blur(12px); /* Delivers premium 30-40% out-of-focus depth backdrop layer */
+                    transform: scale(1.1); /* Over-scrapes edges to hide blurring edge distortions */
+                    z-index: 1;
+                ">
+                    <source src="./assets/menu_bg_video.mp4" type="video/mp4" />
+                </video>
+
+                <div style="
                     position: absolute;
                     top: 0;
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    border: none;
-                    z-index: 1;
-                    pointer-events: none; /* Crucial: Allows finger touches to pass through directly to buttons */
-                "></iframe>
+                    background: radial-gradient(circle at center, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.82) 100%);
+                    z-index: 2;
+                    pointer-events: none; /* Passes touches cleanly through the dimmer layer */
+                "></div>
 
                 <div style="
                     position: absolute;
@@ -32,7 +47,7 @@ export const MenuPage = {
                     justify-content: center;
                     align-items: center;
                     z-index: 10;
-                    pointer-events: none;
+                    pointer-events: none; /* Passes taps through empty grid spaces */
                 ">
                     
                     <div style="
@@ -44,7 +59,7 @@ export const MenuPage = {
                         width: 100%;
                         max-width: 900px;
                         padding: 24px;
-                        pointer-events: auto; /* Re-enables touch recognition strictly over your cards */
+                        pointer-events: auto; /* Re-engages touch trackers strictly on the card nodes */
                     ">
                         
                         <div id="zone-values" class="menu-card-wrapper">
@@ -83,7 +98,7 @@ export const MenuPage = {
                         display: block;
                     }
 
-                    /* Interactive tactical card animation on finger tap contact clicks */
+                    /* Interactive tactile push compression on button card tap events */
                     .menu-card-wrapper:active {
                         transform: scale(0.92);
                         filter: brightness(0.75) drop-shadow(0 4px 8px rgba(0,0,0,0.9));
@@ -97,23 +112,23 @@ export const MenuPage = {
     init() {
         const menuLayer = document.getElementById('page-menu');
         
-        // Trigger smooth entry display opacity animation fade
+        // Handle subtle entry viewport crossfade animation transition
         setTimeout(() => { menuLayer.style.opacity = "1"; }, 50);
 
-        // Programmatic Event Binding Matrix (Safe for Iframe CSP Framework Constraints)
+        // Programmatic Event Binding Matrix (csp safe implementation standards)
         document.getElementById('zone-values').addEventListener('click', function() {
             window.silkAudio.playClick();
-            console.log("Routing execution -> Opening local structures for Value Page Finder...");
+            console.log("Navigation System -> Executing routing switch parameters to: Values Page");
         });
 
         document.getElementById('zone-compare').addEventListener('click', function() {
             window.silkAudio.playClick();
-            console.log("Routing execution -> Initializing local structures for Trade Calculator Room...");
+            console.log("Navigation System -> Executing routing switch parameters to: Trade Calculator Workspace");
         });
 
         document.getElementById('zone-trading').addEventListener('click', function() {
             window.silkAudio.playClick();
-            console.log("Routing execution -> Activating global database streams for Active Ads Board...");
+            console.log("Navigation System -> Executing routing switch parameters to: Shared Instance Bulletin Ads");
         });
     }
 };
