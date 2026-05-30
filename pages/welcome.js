@@ -7,7 +7,7 @@ export const WelcomePage = {
                 text-align: center; 
                 cursor: pointer; 
                 padding: 24px; 
-                justify-content: space-between; /* Evenly splits user banner, titles, and prompt */
+                justify-content: space-between; 
                 background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.65)), 
                             url('./assets/welcome_bg.webp') no-repeat center center fixed;
                 background-size: cover;
@@ -64,8 +64,7 @@ export const WelcomePage = {
                     flex-direction: column;
                     align-items: center;
                     gap: 8px;
-                    opacity: 0;
-                    transition: opacity 0.8s ease-out;
+                    opacity: 1;
                 ">
                     <div style="
                         width: 54px; height: 54px;
@@ -97,24 +96,26 @@ export const WelcomePage = {
                     
                     <h1 style="
                         font-family: 'Viaoda Libre', serif; 
-                        font-size: 3.1rem; 
+                        font-size: 3.6rem; /* Increased size parameter from 3.1rem */
                         font-weight: normal; 
                         color: #AA7C11; 
-                        margin-bottom: 2px; 
+                        margin-bottom: 4px; 
                         letter-spacing: 0.06em; 
-                        text-shadow: 0 4px 10px rgba(0,0,0,0.95), 0 12px 25px rgba(0,0,0,0.85);
+                        /* Enhanced triple-stacked dark shadow backing profile */
+                        text-shadow: 0 4px 16px #000000, 0 12px 36px #000000, 0 24px 65px rgba(0,0,0,0.95);
                     ">
                         Welcome to SILK
                     </h1>
                     
                     <h2 style="
                         font-family: 'Viaoda Libre', serif;
-                        font-size: 1.35rem;
+                        font-size: 1.6rem; /* Increased size parameter from 1.35rem */
                         font-weight: normal;
                         color: #B5924B;
                         letter-spacing: 0.14em;
-                        opacity: 0.85;
-                        text-shadow: 0 3px 8px rgba(0,0,0,0.95), 0 8px 20px rgba(0,0,0,0.8);
+                        opacity: 0.95; /* Heightened asset opacity readability threshold */
+                        /* Enhanced triple-stacked dark shadow backing profile */
+                        text-shadow: 0 3px 12px #000000, 0 8px 28px #000000, 0 16px 45px rgba(0,0,0,0.9);
                     ">
                         Trading Center
                     </h2>
@@ -140,35 +141,12 @@ export const WelcomePage = {
     
     init() {
         const welcomeLayer = document.getElementById('page-welcome');
-        const userBanner = document.getElementById('welcome-user-banner');
         
-        // Dynamic Fade-In entry for user data assets
-        setTimeout(() => { userBanner.style.opacity = "1"; }, 150);
-
-        // =====================================================================
-        // 🖥️ PARSE DISCORD RUNTIME PARAMETERS FOR ACCOUNT ASSETS
-        // =====================================================================
-        // Safely crawls internal storage layers to parse user profiles natively
-        try {
-            if (window.discordSdk && window.discordSdk.userId) {
-                // Query local user state keys fetched during index handshake boot loops
-                const targetName = window.discordUsername || "PLAYER SOLDIER";
-                const targetAvatar = window.discordAvatarUrl || "";
-                
-                if (targetAvatar) document.getElementById('welcome-avatar-target').src = targetAvatar;
-                document.getElementById('welcome-username-target').innerText = targetName.toUpperCase();
-            }
-        } catch (err) {
-            console.log("Preloader Handshake Idle: Displaying local account backup values safely.");
-        }
-
-        // =====================================================================
-        // 🌧️ UPGRADE 3: HIGH-PERFORMANCE LIGHTWEIGHT RAIN DROPLETS ENGINE
-        // =====================================================================
+        // RAIN DROP FLUID MATRIX LOGIC ENGINE
         const canvas = document.getElementById('welcome-rain-canvas');
         const ctx = canvas.getContext('2d');
         let rainDropsArray = [];
-        const maximumDropsCeiling = 60; // Clean particle threshold to guarantee 60 FPS processing loops
+        const maximumDropsCeiling = 60; 
         let rainAnimationFrameId = null;
 
         function resizeRainCanvas() {
@@ -178,7 +156,6 @@ export const WelcomePage = {
         window.addEventListener('resize', resizeRainCanvas);
         resizeRainCanvas();
 
-        // Build continuous rain drop asset arrays mapping geometric spatial bounds
         for (let i = 0; i < maximumDropsCeiling; i++) {
             rainDropsArray.push({
                 x: Math.random() * canvas.width,
@@ -189,26 +166,20 @@ export const WelcomePage = {
             });
         }
 
-        // Infinite tick render routine loop drawing vectors directly to viewport
         function renderRainTick() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Styled with your thematic antique gold tracking colors to fit the aesthetic context cleanly
             ctx.strokeStyle = 'rgba(181, 146, 75, 0.18)';
             ctx.linecap = 'round';
 
             for (let i = 0; i < rainDropsArray.length; i++) {
                 let p = rainDropsArray[i];
                 ctx.lineWidth = p.weight;
-                
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y);
-                ctx.lineTo(p.x + (p.speed * 0.05), p.y + p.length); // Adds realistic angular velocity tracking fall paths
+                ctx.lineTo(p.x + (p.speed * 0.05), p.y + p.length);
                 ctx.stroke();
 
                 p.y += p.speed;
-
-                // Recycle rain droplet parameters when tracking boundaries reach bottom viewport bounds
                 if (p.y > canvas.height) {
                     p.x = Math.random() * canvas.width;
                     p.y = -20;
@@ -219,26 +190,21 @@ export const WelcomePage = {
         }
         renderRainTick();
 
-        // =====================================================================
-        // 🔒 APPLICATION PERSISTENT CONTROL SWITCH TRIGGERS
-        // =====================================================================
+        // SCENE STATE CHANGE LEAP SELECTION INTERFACES
         welcomeLayer.addEventListener('click', function() {
             window.silkAudio.fadeInMusic();
             
-            // Clean up drawing frame calculation structures to safeguard mobile memory allocations
             cancelAnimationFrame(rainAnimationFrameId);
             window.removeEventListener('resize', resizeRainCanvas);
             
-            // High-fidelity transition out zoom timeline sequence block
             welcomeLayer.style.transform = "scale(1.06)";
             welcomeLayer.style.opacity = "0";
             welcomeLayer.style.pointerEvents = "none";
             
             setTimeout(() => {
                 welcomeLayer.classList.add('hidden');
-                welcomeLayer.remove(); // Drops the layer entirely to clear memory space
+                welcomeLayer.remove();
                 
-                // Fire and mount the customized high-performance video backdrop menu hub layer
                 const viewport = document.getElementById('app-viewport');
                 viewport.innerHTML = MenuPage.render();
                 MenuPage.init();
