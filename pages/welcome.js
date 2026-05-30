@@ -74,7 +74,7 @@ export const WelcomePage = {
                         overflow: hidden;
                         background: #1C0F0A;
                     ">
-                        <img id="welcome-avatar-target" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='35' r='20' fill='%23B5924B'/><path d='M10,85 C10,60 90,60 90,85 Z' fill='%23B5924B'/></svg>" style="width:100%; height:100%; object-fit:cover;" />
+                        <img id="welcome-avatar-target" src="./assets/server_icon.webp" alt="Server Icon" style="width:100%; height:100%; object-fit:cover;" />
                     </div>
                     <div id="welcome-username-target" style="
                         font-family: 'Cinzel', serif;
@@ -96,25 +96,23 @@ export const WelcomePage = {
                     
                     <h1 style="
                         font-family: 'Viaoda Libre', serif; 
-                        font-size: 3.6rem; /* Increased size parameter from 3.1rem */
+                        font-size: 3.6rem; 
                         font-weight: normal; 
                         color: #AA7C11; 
                         margin-bottom: 4px; 
                         letter-spacing: 0.06em; 
-                        /* Enhanced triple-stacked dark shadow backing profile */
                         text-shadow: 0 4px 16px #000000, 0 12px 36px #000000, 0 24px 65px rgba(0,0,0,0.95);
                     ">
-                        Welcome to SILK
+                        Welcome to Marleyan
                     </h1>
                     
                     <h2 style="
                         font-family: 'Viaoda Libre', serif;
-                        font-size: 1.6rem; /* Increased size parameter from 1.35rem */
-                        font-weight: normal;
+                        font-size: 1.6rem; 
+                        font-weight: normal; 
                         color: #B5924B;
                         letter-spacing: 0.14em;
-                        opacity: 0.95; /* Heightened asset opacity readability threshold */
-                        /* Enhanced triple-stacked dark shadow backing profile */
+                        opacity: 0.95; 
                         text-shadow: 0 3px 12px #000000, 0 8px 28px #000000, 0 16px 45px rgba(0,0,0,0.9);
                     ">
                         Trading Center
