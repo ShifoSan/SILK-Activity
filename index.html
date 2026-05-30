@@ -63,18 +63,14 @@
             playClick() { this.clickSfx.currentTime = 0; this.clickSfx.play().catch(e => console.log("SFX click tracked.")); }
         };
 
-        // =====================================================================
-        // 🛠️ METHOD 1: BACKGROUND ASSET MEMORY PRE-CACHING ENGINE
-        // =====================================================================
-        // Instantly requests assets the second the activity starts loading
+        // BACKGROUND ASSET MEMORY PRE-CACHING ENGINE
         window.silkPreloader = {
             cachedImages: {},
             cachedVideo: null,
             
             start() {
-                console.log("Pre-caching pipeline initialized. Loading main menu workspace assets into local memory...");
+                console.log("Pre-caching pipeline initialized. Loading main menu assets into local memory...");
                 
-                // 1. Silent Image Cache Binding
                 const menuImages = [
                     { id: 'value', path: './assets/value.webp' },
                     { id: 'compare', path: './assets/compare.webp' },
@@ -88,7 +84,6 @@
                     this.cachedImages[imgData.id] = imgObj;
                 });
 
-                // 2. Silent Video Stream Cache Binding
                 this.cachedVideo = document.createElement('video');
                 this.cachedVideo.src = './assets/menu_bg_video.mp4';
                 this.cachedVideo.preload = 'auto';
@@ -102,13 +97,55 @@
         window.silkAudio.init();
         window.silkPreloader.start();
 
+        // 🛡️ Global user placeholder fallback variables
+        window.discordUsername = "AUTHORIZED SOLDIER";
+        window.discordAvatarUrl = "";
+
         let discordSdk = null;
         if (window.discord && window.discord.DiscordSDK) {
-            try { discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID"); } catch(e) {}
+            try { 
+                // Replace this with your actual Discord application client ID string inside your portal
+                discordSdk = new window.discord.DiscordSDK("YOUR_OAUTH2_CLIENT_ID_HERE"); 
+                window.discordSdk = discordSdk;
+            } catch(e) {}
         }
 
         async function bootActivity() {
-            if (discordSdk) { try { await discordSdk.ready(); } catch(err) {} }
+            // Check if application is running securely inside an active Discord channel context
+            if (discordSdk && discordSdk.channelId) { 
+                try { 
+                    // 1. Wait for the primary client handshake to resolve completely
+                    await discordSdk.ready(); 
+                    
+                    // 2. Fetch the active voice channel data parameters client-side
+                    const channelData = await discordSdk.commands.getChannel({ channel_id: discordSdk.channelId });
+                    
+                    // 3. Scan the channel user profile states matrix to isolate the active player
+                    if (channelData && channelData.voice_states && channelData.voice_states.length > 0) {
+                        const activeUserState = channelData.voice_states[0];
+                        if (activeUserState && activeUserState.user) {
+                            const userData = activeUserState.user;
+                            
+                            // Map premium text labels fallback strings
+                            window.discordUsername = userData.global_name ?? userData.username;
+                            
+                            // Parse and construct standard Discord CDN image routes natively
+                            if (userData.avatar) {
+                                window.discordAvatarUrl = `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png?size=128`;
+                            } else {
+                                // Mathematical default avatar calculation index rule context fallbacks
+                                const defaultIndex = (BigInt(userData.id) >> 22n) % 6n;
+                                window.discordAvatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
+                            }
+                            console.log(`✓ Handshake complete! Captured account state matrix for: ${window.discordUsername}`);
+                        }
+                    }
+                } catch(err) {
+                    console.log("Handshake idle or executing in generic mobile browser. Utilizing default templates.");
+                } 
+            }
+            
+            // Mount the upgraded cinematic user landing splash page elements
             document.getElementById('app-viewport').innerHTML = WelcomePage.render();
             WelcomePage.init();
         }
