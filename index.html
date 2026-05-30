@@ -6,53 +6,17 @@
     <title>S.I.L.K. Trading Center</title>
     <script src="/.proxy/jsdelivr/npm/@discord/embedded-app-sdk@1.0.0/dist/index.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         @font-face {
             font-family: 'Viaoda Libre';
             src: url('./fonts/ViaodaLibre-Regular.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
+            font-weight: normal; font-style: normal;
         }
-        body {
-            background-color: #050811;
-            color: #E2E8F0;
-            font-family: system-ui, -apple-system, sans-serif;
-            min-height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        #app-viewport {
-            width: 100%;
-            height: 100vh;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .page-layer {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s ease-in-out;
-            opacity: 1;
-        }
-        .page-layer.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .hidden {
-            display: none !important;
-        }
+        body { background-color: #050811; color: #E2E8F0; font-family: system-ui, sans-serif; min-height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        #app-viewport { width: 100%; height: 100vh; position: relative; display: flex; justify-content: center; align-items: center; }
+        .page-layer { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s ease-in-out; opacity: 1; }
+        .page-layer.fade-out { opacity: 0; pointer-events: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -62,81 +26,81 @@
     <script type="module">
         import { WelcomePage } from './pages/welcome.js';
 
-        // Advanced Web Audio API Engine Architecture with Loop Safety Gates
+        // Advanced Web Audio API Engine
         window.silkAudio = {
             bgMusic: new Audio('./assets/bg-music.ogg'),
             clickSfx: new Audio('./assets/click-sfx.ogg'),
-            audioCtx: null,
-            filterNode: null,
-            isGraphConnected: false,
-            
+            audioCtx: null, filterNode: null, isGraphConnected: false,
             init() {
-                this.bgMusic.loop = true; // Primary native looping property
-                this.bgMusic.volume = 0;   // Starts silent for fluid crossfade entry
-                this.bgMusic.preload = 'auto';
-                this.clickSfx.preload = 'auto';
-                
-                // Clear click sound effects volume scale balance
+                this.bgMusic.loop = true; this.bgMusic.volume = 0;
+                this.bgMusic.preload = 'auto'; this.clickSfx.preload = 'auto';
                 this.clickSfx.volume = 0.5;
-
-                // Programmatic Loop Safety Gate: Protects against mobile audio graph interruptions
                 this.bgMusic.addEventListener('ended', () => {
-                    console.log("Audio loop threshold passed. Executing seamless rewind restart sequence...");
                     this.bgMusic.currentTime = 0;
-                    this.bgMusic.play().catch(err => console.log("Loop restart exception skipped."));
+                    this.bgMusic.play().catch(e => console.log("Audio loop skip."));
                 });
             },
-            
             fadeInMusic() {
-                // Initialize processing layout tracks on the user interaction trigger gesture step
                 if (!this.isGraphConnected) {
                     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
                     if (AudioContextClass) {
                         this.audioCtx = new AudioContextClass();
-                        
-                        // Map music track source element into audio pipeline graph context
                         const source = this.audioCtx.createMediaElementSource(this.bgMusic);
                         this.filterNode = this.audioCtx.createBiquadFilter();
-                        
-                        // Configure Low-Pass Filter to handle the muffled ambient style effect
-                        this.filterNode.type = 'lowpass';
-                        this.filterNode.frequency.value = 650; // Controls muffling tone parameters
-                        
-                        // Connect: Audio Clip Stream -> Equalizer Node Filter -> Device System Outputs
-                        source.connect(this.filterNode);
-                        this.filterNode.connect(this.audioCtx.destination);
+                        this.filterNode.type = 'lowpass'; this.filterNode.frequency.value = 650;
+                        source.connect(this.filterNode); this.filterNode.connect(this.audioCtx.destination);
                         this.isGraphConnected = true;
                     }
                 }
-
-                // Resume audio processing tree if suspended by mobile power saving frameworks
-                if (this.audioCtx && this.audioCtx.state === 'suspended') {
-                    this.audioCtx.resume();
-                }
-
-                this.bgMusic.play().catch(err => console.log("Audio pipeline active."));
-                
-                let vol = 0;
-                const targetMaxVolume = 0.18; // Soft atmospheric volume floor ceiling (18% scale)
-                
+                if (this.audioCtx && this.audioCtx.state === 'suspended') this.audioCtx.resume();
+                this.bgMusic.play().catch(e => console.log("Audio bypass active."));
+                let vol = 0; const targetMaxVolume = 0.18;
                 const fadeInterval = setInterval(() => {
-                    if (vol < targetMaxVolume) {
-                        vol += 0.02;
-                        this.bgMusic.volume = parseFloat(vol.toFixed(2));
-                    } else {
-                        clearInterval(fadeInterval);
-                    }
+                    if (vol < targetMaxVolume) { vol += 0.02; this.bgMusic.volume = parseFloat(vol.toFixed(2)); }
+                    else { clearInterval(fadeInterval); }
                 }, 120);
             },
+            playClick() { this.clickSfx.currentTime = 0; this.clickSfx.play().catch(e => console.log("SFX click tracked.")); }
+        };
+
+        // =====================================================================
+        // 🛠️ METHOD 1: BACKGROUND ASSET MEMORY PRE-CACHING ENGINE
+        // =====================================================================
+        // Instantly requests assets the second the activity starts loading
+        window.silkPreloader = {
+            cachedImages: {},
+            cachedVideo: null,
             
-            playClick() {
-                this.clickSfx.currentTime = 0;
-                this.clickSfx.play().catch(err => console.log("SFX click executed safely."));
+            start() {
+                console.log("Pre-caching pipeline initialized. Loading main menu workspace assets into local memory...");
+                
+                // 1. Silent Image Cache Binding
+                const menuImages = [
+                    { id: 'value', path: './assets/value.webp' },
+                    { id: 'compare', path: './assets/compare.webp' },
+                    { id: 'trade', path: './assets/trade.webp' }
+                ];
+                
+                menuImages.forEach(imgData => {
+                    const imgObj = new Image();
+                    imgObj.src = imgData.path;
+                    imgObj.onload = () => { console.log(`✓ Image pre-cached successfully: ${imgData.id}`); };
+                    this.cachedImages[imgData.id] = imgObj;
+                });
+
+                // 2. Silent Video Stream Cache Binding
+                this.cachedVideo = document.createElement('video');
+                this.cachedVideo.src = './assets/menu_bg_video.mp4';
+                this.cachedVideo.preload = 'auto';
+                this.cachedVideo.muted = true;
+                this.cachedVideo.load();
+                console.log("✓ Video stream buffering initiated in background cache.");
             }
         };
 
-        // Initialize audio engine parameters
+        // Run system initializations
         window.silkAudio.init();
+        window.silkPreloader.start();
 
         let discordSdk = null;
         if (window.discord && window.discord.DiscordSDK) {
@@ -144,14 +108,10 @@
         }
 
         async function bootActivity() {
-            if (discordSdk) {
-                try { await discordSdk.ready(); } catch(err) {}
-            }
-            // Mount application starting step node
+            if (discordSdk) { try { await discordSdk.ready(); } catch(err) {} }
             document.getElementById('app-viewport').innerHTML = WelcomePage.render();
             WelcomePage.init();
         }
-
         bootActivity();
     </script>
 </body>
