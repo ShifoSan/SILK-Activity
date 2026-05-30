@@ -31,7 +31,7 @@ export const MenuPage = {
                     justify-content: center;
                     align-items: center;
                     z-index: 10;
-                    pointer-events: none; /* Passes taps through empty space smoothly */
+                    pointer-events: none; /* Allows canvas context clicks to slide through free viewport spaces */
                 ">
                     
                     <div style="
@@ -39,11 +39,11 @@ export const MenuPage = {
                         flex-direction: row;
                         justify-content: center;
                         align-items: center;
-                        gap: 32px; /* Precision spacing between your custom button elements */
+                        gap: 32px; /* Precision gap spacing between your compact button shapes */
                         width: 100%;
                         max-width: 900px;
                         padding: 24px;
-                        pointer-events: auto; /* Re-enables touch tracking strictly over your cards */
+                        pointer-events: auto; /* Re-locks touch execution strictly over your custom images */
                     ">
                         
                         <div id="zone-values" class="menu-card-wrapper">
@@ -62,7 +62,7 @@ export const MenuPage = {
                 </div>
 
                 <style>
-                    /* DOWNSCALED BUTTON LAYOUT PROFILE - Spaced to match your exact calibration canvas lines */
+                    /* COMPACT ASPECT PROPORTIONS - Evaluated cleanly from your manual calibrations */
                     .menu-card-wrapper {
                         width: 11.5vw;
                         max-width: 120px;
@@ -83,7 +83,7 @@ export const MenuPage = {
                         display: block;
                     }
 
-                    /* Tactical physical scale compression response metrics on finger contact clicks */
+                    /* Interactive tactile scaling physics applied on finger contact clicks */
                     .menu-card-wrapper:active {
                         transform: scale(0.92);
                         filter: brightness(0.75) drop-shadow(0 4px 8px rgba(0,0,0,0.9));
@@ -97,21 +97,23 @@ export const MenuPage = {
     init() {
         const menuLayer = document.getElementById('page-menu');
         
-        // Trigger subtle structural display entry fade script crossfade layout bounds
+        // Handle subtle display entrance opacity crossfade sequence
         setTimeout(() => { menuLayer.style.opacity = "1"; }, 50);
 
         // =====================================================================
-        // 🚀 PROGRAMMATIC 3D STARFIELD DEEP SPACE WARP VELOCITY CORE ENGINE
+        // 🚀 HIGH-DENSITY MULTI-COLOR STARFIELD SPACE ENGINE PIPELINE
         // =====================================================================
         const canvas = document.getElementById('menu-starfield-canvas');
         const ctx = canvas.getContext('2d');
         
         let starsArray = [];
-        const maxStarsCount = 150; // Optimized load cluster matching high-performance phone requirements
-        const travelSpeed = 4.5;    // Velocity rate index controlling speed through depth lines
+        const maxStarsCount = 450; // Increased scale density for a spectacular cinematic travel grid
+        const travelSpeed = 4.2;    // Balanced warp timeline speed index
         let animationFrameId = null;
 
-        // Auto-scaling calculation handler balancing coordinate dimensions on mobile resizing metrics
+        // Curated Palette Array representing a deep cosmic battle mesh environment
+        const spacePalette = ['#B5924B', '#B5924B', '#38BDF8', '#F97316', '#E2E8F0'];
+
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -120,7 +122,7 @@ export const MenuPage = {
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // High-precision particle generation state tracking mapping geometric depth
+        // Build geometric coordinate properties matching mobile aspect scaling loops
         function createStarField() {
             starsArray = [];
             for (let i = 0; i < maxStarsCount; i++) {
@@ -128,14 +130,16 @@ export const MenuPage = {
                     x: (Math.random() - 0.5) * canvas.width * 2,
                     y: (Math.random() - 0.5) * canvas.height * 2,
                     z: Math.random() * canvas.width,
-                    size: Math.random() * 1.5 + 0.5
+                    size: Math.random() * 1.3 + 0.4,
+                    // Assigns a persistent random color from our curated thematic space pool
+                    color: spacePalette[Math.floor(Math.random() * spacePalette.length)]
                 });
             }
         }
 
-        // Loop execution matrix running direct drawing ticks to browser intervals
+        // Draw interval frame rendering loops
         function updateAndDrawStars() {
-            // Partial fade over drawing step creates beautiful motion trails
+            // Semi-translucent sweep redraw generates soft trailing speed line paths
             ctx.fillStyle = 'rgba(0, 0, 0, 0.18)'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -145,69 +149,60 @@ export const MenuPage = {
             for (let i = 0; i < starsArray.length; i++) {
                 let star = starsArray[i];
                 
-                // Advance particle forward along the Z depth vector plane
+                // Accelerate the node down along the perspective plane
                 star.z -= travelSpeed;
 
-                // Reset position loop anchor if particle travels past user viewport camera field boundaries
+                // Infinite boundary restart loop reset parameters
                 if (star.z <= 0) {
                     star.x = (Math.random() - 0.5) * canvas.width * 2;
                     star.y = (Math.random() - 0.5) * canvas.height * 2;
                     star.z = canvas.width;
                 }
 
-                // 3D Perspective Projection Math (Converts spatial matrices into screen pixels)
+                // 3D Perspective Matrix Conversion Math
                 const screenX = (star.x / star.z) * centerX + centerX;
                 const screenY = (star.y / star.z) * centerY + centerY;
                 
-                // Dynamically expand element bounds as coordinates approach screen edges
-                const starRadius = (1 - star.z / canvas.width) * star.size * 2.5;
+                // Dynamically enlarge coordinate dots as they approach screen edges
+                const starRadius = (1 - star.z / canvas.width) * star.size * 2.8;
 
-                // Render vector draw channels if points sit safely inside screen dimensions
+                // Push vector parameters directly into hardware frame pipeline buffers
                 if (screenX >= 0 && screenX <= canvas.width && screenY >= 0 && screenY <= canvas.height) {
                     ctx.beginPath();
                     ctx.arc(screenX, screenY, Math.max(0.1, starRadius), 0, Math.PI * 2);
-                    
-                    // Styled with your thematic antique dark gold highlights to anchor the visual weight
-                    ctx.fillStyle = '#B5924B';
-                    ctx.shadowBlur = starRadius * 2;
-                    ctx.shadowColor = 'rgba(181, 146, 75, 0.4)';
-                    
+                    ctx.fillStyle = star.color;
                     ctx.fill();
                 }
             }
-            
-            // Clean up drawing constraints to avoid slowing down card rendering steps
-            ctx.shadowBlur = 0;
 
             animationFrameId = requestAnimationFrame(updateAndDrawStars);
         }
 
-        // Launch canvas systems
         createStarField();
         updateAndDrawStars();
 
         // =====================================================================
-        // 🔒 SECURE APPLICATION PROGRAMMATIC LINK BOUND LISTENERS
+        // 🔒 CSP COMPLIANT APP STEP CONTROL BUTTON CLICKS
         // =====================================================================
+        // Note: Freezing animations on button clicks has been completely removed!
+        // The stars will keep traveling smoothly in the background while audio clips fire.
+        
         document.getElementById('zone-values').addEventListener('click', function() {
             window.silkAudio.playClick();
-            cancelAnimationFrame(animationFrameId); // Closes looping threads to save browser battery
-            window.removeEventListener('resize', resizeCanvas);
-            console.log("Navigation Execution -> Transitioning context path arrays into Value Engine Panel...");
+            console.log("Navigation Pipeline Active -> Fetching local structures for: Value Page");
+            // Next Phase Route Matrix Entry -> Fade layout and launch values.js viewport context here
         });
 
         document.getElementById('zone-compare').addEventListener('click', function() {
             window.silkAudio.playClick();
-            cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('resize', resizeCanvas);
-            console.log("Navigation Execution -> Transitioning context path arrays into Trade Calculator Space...");
+            console.log("Navigation Pipeline Active -> Generating local structures for: Comparison Page");
+            // Next Phase Route Matrix Entry -> Fade layout and launch compare.js calculation layers here
         });
 
         document.getElementById('zone-trading').addEventListener('click', function() {
             window.silkAudio.playClick();
-            cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('resize', resizeCanvas);
-            console.log("Navigation Execution -> Streaming shared cluster parameters into Live Trade Bulletin Board...");
+            console.log("Navigation Pipeline Active -> Activating cloud clusters for: Global Trade Bulletin Board");
+            // Next Phase Route Matrix Entry -> Fade layout and sync shared instance MongoDB collections here
         });
     }
 };
