@@ -48,16 +48,16 @@ export const MenuPage = {
                         gap: 32px; width: 100%; max-width: 900px; padding: 24px; pointer-events: auto;
                     ">
                         
-                        <div id="zone-values" class="menu-card-wrapper">
+                        <div id="zone-values" class="menu-card-wrapper card-reduced">
                             <img src="./assets/value.webp" alt="Values" class="menu-card-img" />
                         </div>
                         
-                        <div id="zone-compare" class="menu-card-wrapper">
-                            <img src="./assets/compare.webp" alt="Compare" class="menu-card-img" />
-                        </div>
-                        
-                        <div id="zone-trading" class="menu-card-wrapper">
+                        <div id="zone-trading" class="menu-card-wrapper card-expanded">
                             <img src="./assets/trade.webp" alt="Trading" class="menu-card-img" />
+                        </div>
+
+                        <div id="zone-compare" class="menu-card-wrapper card-reduced">
+                            <img src="./assets/compare.webp" alt="Compare" class="menu-card-img" />
                         </div>
                         
                     </div>
@@ -65,12 +65,16 @@ export const MenuPage = {
 
                 <style>
                     .menu-card-wrapper {
-                        width: 11.5vw; max-width: 120px; height: auto;
                         cursor: pointer; display: flex; justify-content: center; align-items: center;
                         transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s ease;
                         -webkit-tap-highlight-color: transparent;
                         filter: drop-shadow(0 15px 30px rgba(0,0,0,0.85));
                     }
+                    
+                    /* Custom sizing layouts */
+                    .card-reduced { width: 10vw; max-width: 105px; height: auto; }
+                    .card-expanded { width: 13vw; max-width: 135px; height: auto; }
+                    
                     .menu-card-img { width: 100%; height: auto; object-fit: contain; display: block; }
                     .menu-card-wrapper:active { transform: scale(0.92); filter: brightness(0.75) drop-shadow(0 4px 8px rgba(0,0,0,0.9)); }
                 </style>
@@ -87,20 +91,14 @@ export const MenuPage = {
             window.silkAudio.playClick();
             console.log("Navigation System -> Sourcing Value Finder Page Module...");
             
-            // 1. Target the current menu layer and fade it out
             menuLayer.style.opacity = "0";
             menuLayer.style.pointerEvents = "none";
             
-            // 2. Wait for the fade transition, then replace the DOM
             setTimeout(() => {
                 menuLayer.remove(); 
-                
                 const viewport = document.getElementById('app-viewport');
-                
-                // 3. Inject the Values Page without changing the URL
                 viewport.innerHTML = ValuesPage.render(); 
                 ValuesPage.init(); 
-                
             }, 500); 
         });
 
