@@ -1,3 +1,5 @@
+import { ValuesPage } from './values.js';
+
 export const MenuPage = {
     render() {
         return `
@@ -84,6 +86,22 @@ export const MenuPage = {
         document.getElementById('zone-values').addEventListener('click', function() {
             window.silkAudio.playClick();
             console.log("Navigation System -> Sourcing Value Finder Page Module...");
+            
+            // 1. Target the current menu layer and fade it out
+            menuLayer.style.opacity = "0";
+            menuLayer.style.pointerEvents = "none";
+            
+            // 2. Wait for the fade transition, then replace the DOM
+            setTimeout(() => {
+                menuLayer.remove(); 
+                
+                const viewport = document.getElementById('app-viewport');
+                
+                // 3. Inject the Values Page without changing the URL
+                viewport.innerHTML = ValuesPage.render(); 
+                ValuesPage.init(); 
+                
+            }, 500); 
         });
 
         document.getElementById('zone-compare').addEventListener('click', function() {
