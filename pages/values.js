@@ -55,7 +55,7 @@ export const ValuesPage = {
                         min-width: 320px;
                         min-height: 400px;
                         padding: 30px;
-                        background-color: #1F0902; /* Your exact solid hex color selection */
+                        background: linear-gradient(135deg, rgba(5, 4, 4, 0.96) 0%, rgba(0, 0, 0, 0.99) 100%);
                         box-shadow: 0 24px 50px rgba(0, 0, 0, 0.95), 
                                     inset 0 0 30px rgba(0, 0, 0, 0.9);
                         display: flex;
