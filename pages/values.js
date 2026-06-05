@@ -69,7 +69,7 @@ export const ValuesPage = {
                         width: 65vw;
                         height: 65vh;
                         min-width: 320px;
-                        min-height: 480px; /* Slightly heightened to accommodate new controls */
+                        min-height: 480px;
                         padding: 30px;
                         background: linear-gradient(135deg, rgba(5, 4, 4, 0.96) 0%, rgba(0, 0, 0, 0.99) 100%);
                         box-shadow: 0 24px 50px rgba(0, 0, 0, 0.95), 
@@ -259,8 +259,15 @@ export const ValuesPage = {
                     metaName.innerText = data.item_name || "Unknown Asset";
                     metaDesc.innerText = data.content || "No details provided.";
                     
-                    // Assign image link and handle image onload fading cycle safely
-                    displayImg.src = data.image_link;
+                    // Secret sauce: Swap the blocked external domain for your new safe Discord proxy prefix!
+                    // Added a check to ensure it still works cleanly on direct browser Vercel hits too
+                    const isDiscordEmbed = window.location.host.includes('discordsays.com') || window.location.host.includes('discord');
+                    const safeProxyUrl = isDiscordEmbed 
+                        ? data.image_link.replace("https://res.cloudinary.com", "/cloudinary") 
+                        : data.image_link;
+                    
+                    // Assign the proxy image link and handle image onload fading cycle safely
+                    displayImg.src = safeProxyUrl;
                     displayImg.onload = () => {
                         spinnerLoader.style.display = 'none';
                         displayImg.style.display = 'block';
