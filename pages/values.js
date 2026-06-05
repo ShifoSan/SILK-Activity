@@ -55,7 +55,7 @@ export const ValuesPage = {
                         min-width: 320px;
                         min-height: 400px;
                         padding: 30px;
-                        background: linear-gradient(135deg, rgba(18, 10, 5, 0.95) 0%, rgba(8, 4, 1, 0.98) 100%);
+                        background: linear-gradient(135deg, rgba(31, 9, 2, 0.96) 0%, rgba(13, 3, 1, 0.99) 100%);
                         box-shadow: 0 24px 50px rgba(0, 0, 0, 0.95), 
                                     inset 0 0 30px rgba(0, 0, 0, 0.9);
                         display: flex;
