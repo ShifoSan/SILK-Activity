@@ -1,19 +1,11 @@
 // api/search.js
 import { MongoClient } from 'mongodb';
 
-// Cache the database connection across serverless invocations
 let cachedClient = null;
 
 async function connectToDatabase() {
-    if (cachedClient) {
-        return cachedClient;
-    }
-    
+    if (cachedClient) return cachedClient;
     const uri = process.env.MONGO_URI;
-    if (!uri) {
-        throw new Error('Please define the MONGO_URI environment variable inside .env');
-    }
-
     const client = new MongoClient(uri);
     await client.connect();
     cachedClient = client;
@@ -21,31 +13,61 @@ async function connectToDatabase() {
 }
 
 export default async function handler(req, res) {
-    // Only allow POST requests from your frontend search panel
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
     try {
         const { query } = req.body;
-        if (!query) {
-            return res.status(400).json({ error: 'Query text is required' });
-        }
+        if (!query) return res.status(400).json({ error: 'Query text is required' });
 
-        const client = await connectToDatabase();
-        const db = client.db('silk_bot');
-        const collection = db.collection('aotr_knowledge');
-
-        // Performs a case-insensitive fuzzy match on the 'item_name' field
-        const item = await collection.findOne({
-            item_name: { $regex: new RegExp(query, 'i') }
+        const geminiApiKey = process.env.GEMINI_API_KEY;
+        
+        // 1. Generate Vector Embedding using the exact gemini-embedding-2 model
+        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent?key=${geminiApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                // Per the docs: task_type is unsupported, so we include the task instruction directly in the text
+                content: { parts: [{ text: `Find information about the item: ${query}` }] },
+                // Explicitly requesting 3072 to match your database schema
+                outputDimensionality: 3072
+            })
         });
+        
+        const aiData = await aiResponse.json();
+        
+        if (!aiData.embedding || !aiData.embedding.values) {
+            console.error("Gemini API Error:", aiData);
+            return res.status(500).json({ error: 'Failed to generate embedding' });
+        }
+        
+        const queryVector = aiData.embedding.values;
 
-        if (!item) {
+        // 2. Connect to MongoDB and run Vector Search
+        const client = await connectToDatabase();
+        const collection = client.db('silk_bot').collection('aotr_knowledge');
+
+        const pipeline = [
+            {
+                "$vectorSearch": {
+                    "index": "vector_index", // IMPORTANT: Must match your exact Atlas Search Index name
+                    "path": "embedding",
+                    "queryVector": queryVector,
+                    "numCandidates": 20,
+                    "limit": 1
+                }
+            }
+        ];
+
+        const results = await collection.aggregate(pipeline).toArray();
+
+        // 3. Return the payload to the frontend
+        if (results.length === 0) {
             return res.status(404).json({ message: 'Item not found in registry' });
         }
 
-        // Return the exact fields your frontend UI component expects to ingest
+        const item = results[0];
         return res.status(200).json({
             item_name: item.item_name,
             image_link: item.image_link || null,
@@ -53,7 +75,7 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('Database query error:', error);
+        console.error('Vector query error:', error);
         return res.status(500).json({ error: 'Internal Server Error', details: error.message });
     }
 }
