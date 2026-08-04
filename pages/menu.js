@@ -1,5 +1,6 @@
 import { ValuesPage } from './values.js';
 import { ComparePage } from './compare.js';
+import { TradePage } from './trade.js';
 
 export const MenuPage = {
     render() {
@@ -121,6 +122,16 @@ export const MenuPage = {
         document.getElementById('zone-trading').addEventListener('click', function() {
             window.silkAudio.playClick();
             console.log("Navigation System -> Fetching Shared Instance Bulletin Board...");
+
+            menuLayer.style.opacity = "0";
+            menuLayer.style.pointerEvents = "none";
+
+            setTimeout(() => {
+                menuLayer.remove();
+                const viewport = document.getElementById('app-viewport');
+                viewport.innerHTML = TradePage.render();
+                TradePage.init();
+            }, 500);
         });
     }
 };
