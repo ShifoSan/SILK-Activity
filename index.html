@@ -64,7 +64,7 @@
         };
 
         // =====================================================================
-        // ðŸ› ï¸ METHOD 1: BACKGROUND ASSET MEMORY PRE-CACHING ENGINE
+        // 🛠️ METHOD 1: BACKGROUND ASSET MEMORY PRE-CACHING ENGINE
         // =====================================================================
         // Instantly requests assets the second the activity starts loading
         window.silkPreloader = {
@@ -84,7 +84,7 @@
                 menuImages.forEach(imgData => {
                     const imgObj = new Image();
                     imgObj.src = imgData.path;
-                    imgObj.onload = () => { console.log(`âœ“ Image pre-cached successfully: ${imgData.id}`); };
+                    imgObj.onload = () => { console.log(`✓ Image pre-cached successfully: ${imgData.id}`); };
                     this.cachedImages[imgData.id] = imgObj;
                 });
 
@@ -94,7 +94,7 @@
                 this.cachedVideo.preload = 'auto';
                 this.cachedVideo.muted = true;
                 this.cachedVideo.load();
-                console.log("âœ“ Video stream buffering initiated in background cache.");
+                console.log("✓ Video stream buffering initiated in background cache.");
             }
         };
 
@@ -106,6 +106,7 @@
         if (window.discord && window.discord.DiscordSDK) {
             try { discordSdk = new window.discord.DiscordSDK("YOUR_DISCORD_CLIENT_ID"); } catch(e) {}
         }
+        window.discordSdk = discordSdk; // Globally exposed for page modules (e.g., OAuth, guild scoping in pages/trade.js)
 
         async function bootActivity() {
             if (discordSdk) { try { await discordSdk.ready(); } catch(err) {} }
