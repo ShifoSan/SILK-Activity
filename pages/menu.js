@@ -1,4 +1,5 @@
 import { ValuesPage } from './values.js';
+import { ComparePage } from './compare.js';
 
 export const MenuPage = {
     render() {
@@ -105,6 +106,16 @@ export const MenuPage = {
         document.getElementById('zone-compare').addEventListener('click', function() {
             window.silkAudio.playClick();
             console.log("Navigation System -> Initializing Trade Compare Matrix...");
+
+            menuLayer.style.opacity = "0";
+            menuLayer.style.pointerEvents = "none";
+
+            setTimeout(() => {
+                menuLayer.remove();
+                const viewport = document.getElementById('app-viewport');
+                viewport.innerHTML = ComparePage.render();
+                ComparePage.init();
+            }, 500);
         });
 
         document.getElementById('zone-trading').addEventListener('click', function() {
