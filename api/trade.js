@@ -1,11 +1,10 @@
-// api/trade.js — Trade Bulletin Board storage + mechanical value badges.
+// api/trade.js — Trade Bulletin Board. Session-token auth (bot-issued passwords).
 import { getTradeCollection, fetchCompareItem } from '../lib/silkdb.js';
-import { verifyBearer } from '../lib/discordAuth.js';
+import { verifySession } from '../lib/sessions.js';
 
 const HOURS_ALLOWED = new Set([1, 3, 6, 12, 24, 48, 72]);
 const MAX_ACTIVE = 5;
 const PAGE = 12;
-
 const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 async function computeTotals(raw, cacheMap) {
@@ -37,16 +36,14 @@ async function handleGet(req, res) {
   const now = Date.now();
   const col = await getTradeCollection();
   const cacheMap = new Map();
-
-  const guildFilter = q.guildId ? { guildId: { $in: [String(q.guildId), null] } } : {};
   let filter, sort, limit;
 
   if (q.seller) {
-    filter = { sellerId: String(q.seller), ...guildFilter };
+    filter = { sellerId: String(q.seller) };
     sort = { createdAt: -1 };
     limit = 10;
   } else {
-    filter = { status: 'open', deadlineTs: { $gt: now }, ...guildFilter };
+    filter = { status: 'open', deadlineTs: { $gt: now } };
     if (q.q) {
       const rx = new RegExp(escRe(String(q.q).trim()), 'i');
       filter.$or = [{ offeringRaw: rx }, { seekingRaw: rx }];
@@ -62,7 +59,7 @@ async function handleGet(req, res) {
     const seek = await computeTotals(d.seekingRaw, cacheMap);
     ads.push({
       id: String(d._id),
-      sellerId: d.sellerId, sellerName: d.sellerName, sellerAvatar: d.sellerAvatar || null,
+      sellerId: d.sellerId, sellerName: d.sellerName, sellerUsername: d.sellerUsername || d.sellerName, sellerAvatar: d.sellerAvatar || null,
       offeringRaw: d.offeringRaw,
       offeringChips: String(d.offeringRaw).split('+').map(s => s.trim()).filter(Boolean),
       offeringKeys: off.anyOk ? off.total : null,
@@ -73,17 +70,15 @@ async function handleGet(req, res) {
       expired: d.deadlineTs <= now
     });
   }
-
-  const openCount = await col.countDocuments({ status: 'open', deadlineTs: { $gt: now }, ...guildFilter });
+  const openCount = await col.countDocuments({ status: 'open', deadlineTs: { $gt: now } });
   const out = { ads, openCount };
   if (q.seller) out.myCount = await col.countDocuments({ sellerId: String(q.seller), status: 'open', deadlineTs: { $gt: now } });
   return res.status(200).json(out);
 }
 
 async function handleCreate(req, res) {
-  const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  const user = await verifyBearer(token);
-  if (!user) return res.status(401).json({ error: 'unauthorized' });
+  const session = await verifySession((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+  if (!session) return res.status(401).json({ error: 'unauthorized' });
 
   const b = req.body || {};
   const offeringRaw = String(b.offering || '').trim();
@@ -96,19 +91,17 @@ async function handleCreate(req, res) {
 
   const col = await getTradeCollection();
   const now = Date.now();
-
-  // at least one recognizable offered item (anti-junk)
   const check = await computeTotals(offeringRaw, new Map());
   if (!check.anyOk) return res.status(422).json({ error: 'Offering must contain at least one recognizable item.' });
 
-  const active = await col.countDocuments({ sellerId: user.id, status: 'open', deadlineTs: { $gt: now } });
+  const active = await col.countDocuments({ sellerId: session.userId, status: 'open', deadlineTs: { $gt: now } });
   if (active >= MAX_ACTIVE) return res.status(422).json({ error: `Active ad limit reached (${MAX_ACTIVE}). Close one or let it expire.` });
 
   const doc = {
-    guildId: b.guildId ? String(b.guildId) : null,
-    sellerId: user.id,
-    sellerName: user.global_name || user.username,
-    sellerAvatar: user.avatar || null,
+    sellerId: session.userId,
+    sellerName: session.globalName || session.username,
+    sellerUsername: session.username,
+    sellerAvatar: session.avatar || null,
     offeringRaw, seekingRaw, note,
     createdAt: now,
     deadlineTs: now + hours * 3600 * 1000,
@@ -119,9 +112,8 @@ async function handleCreate(req, res) {
 }
 
 async function handlePatch(req, res) {
-  const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  const user = await verifyBearer(token);
-  if (!user) return res.status(401).json({ error: 'unauthorized' });
+  const session = await verifySession((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+  if (!session) return res.status(401).json({ error: 'unauthorized' });
   const { id, action } = req.body || {};
   if (!id || !['close', 'reopen'].includes(action)) return res.status(400).json({ error: 'bad_request' });
   const col = await getTradeCollection();
@@ -129,7 +121,7 @@ async function handlePatch(req, res) {
   let oid; try { oid = new ObjectId(String(id)); } catch { return res.status(400).json({ error: 'bad_id' }); }
   const ad = await col.findOne({ _id: oid });
   if (!ad) return res.status(404).json({ error: 'not_found' });
-  if (ad.sellerId !== user.id) return res.status(403).json({ error: 'not_yours' });
+  if (ad.sellerId !== session.userId) return res.status(403).json({ error: 'not_yours' });
   if (action === 'close') await col.updateOne({ _id: oid }, { $set: { status: 'closed' } });
   if (action === 'reopen') {
     if (ad.deadlineTs <= Date.now()) return res.status(422).json({ error: 'Expired ads cannot be reopened — post a fresh one.' });
@@ -139,14 +131,13 @@ async function handlePatch(req, res) {
 }
 
 async function handleDelete(req, res) {
-  const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  const user = await verifyBearer(token);
-  if (!user) return res.status(401).json({ error: 'unauthorized' });
+  const session = await verifySession((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+  if (!session) return res.status(401).json({ error: 'unauthorized' });
   const id = req.query && req.query.id ? String(req.query.id) : '';
   const col = await getTradeCollection();
   const { ObjectId } = (await import('mongodb'));
   let oid; try { oid = new ObjectId(id); } catch { return res.status(400).json({ error: 'bad_id' }); }
-  const del = await col.deleteOne({ _id: oid, sellerId: user.id });
+  const del = await col.deleteOne({ _id: oid, sellerId: session.userId });
   if (!del.deletedCount) return res.status(403).json({ error: 'not_yours' });
   return res.status(200).json({ ok: true });
 }
