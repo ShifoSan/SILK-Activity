@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.I.L.K. Trading Center</title>
-    <script type="importmap">
-        { "imports": { "zod": "./vendor/zod/index.mjs" } }
-    </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @font-face {
@@ -26,7 +23,6 @@
     <div id="app-viewport"></div>
 
     <script type="module">
-        import { DiscordSDK } from './vendor/embedded-app-sdk/index.mjs';
         import { WelcomePage } from './pages/welcome.js';
 
         // Advanced Web Audio API Engine
@@ -66,51 +62,35 @@
             playClick() { this.clickSfx.currentTime = 0; this.clickSfx.play().catch(e => console.log("SFX click tracked.")); }
         };
 
-        // =====================================================================
-        // 🛠️ METHOD 1: BACKGROUND ASSET MEMORY PRE-CACHING ENGINE
-        // =====================================================================
-        // Instantly requests assets the second the activity starts loading
+        // Background asset pre-caching engine
         window.silkPreloader = {
             cachedImages: {},
             cachedVideo: null,
-            
             start() {
-                console.log("Pre-caching pipeline initialized. Loading main menu workspace assets into local memory...");
-                
-                // 1. Silent Image Cache Binding
                 const menuImages = [
                     { id: 'value', path: './assets/value.webp' },
                     { id: 'compare', path: './assets/compare.webp' },
                     { id: 'trade', path: './assets/trade.webp' }
                 ];
-                
                 menuImages.forEach(imgData => {
                     const imgObj = new Image();
                     imgObj.src = imgData.path;
-                    imgObj.onload = () => { console.log(`✓ Image pre-cached successfully: ${imgData.id}`); };
                     this.cachedImages[imgData.id] = imgObj;
                 });
-
-                // 2. Silent Video Stream Cache Binding
                 this.cachedVideo = document.createElement('video');
                 this.cachedVideo.src = './assets/menu_bg_video.mp4';
                 this.cachedVideo.preload = 'auto';
                 this.cachedVideo.muted = true;
                 this.cachedVideo.load();
-                console.log("✓ Video stream buffering initiated in background cache.");
             }
         };
 
-        // Run system initializations
         window.silkAudio.init();
         window.silkPreloader.start();
 
-        let discordSdk = null;
-        try { discordSdk = new DiscordSDK("1468734164386971821"); } catch(e) {}
-        window.discordSdk = discordSdk;
-
+        // Identity is handled by the bot-issued password login (api/login.js).
+        // No Discord SDK needed anymore.
         async function bootActivity() {
-            if (discordSdk) { try { await discordSdk.ready(); } catch(err) {} }
             document.getElementById('app-viewport').innerHTML = WelcomePage.render();
             WelcomePage.init();
         }
