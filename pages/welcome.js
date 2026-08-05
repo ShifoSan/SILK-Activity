@@ -21,7 +21,6 @@ export const WelcomePage = {
                 z-index: 10;
                 transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease-in-out;
             ">
-                
                 <canvas id="welcome-rain-canvas" style="
                     position: absolute;
                     top: 0; left: 0;
@@ -31,26 +30,21 @@ export const WelcomePage = {
                     display: block;
                 "></canvas>
 
+                <button id="welcome-gear" class="silk-gear-btn" type="button" title="Settings">⚙</button>
+
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&display=swap');
-
-                    /* Cinematic slow vertical floating wavelength loop */
                     @keyframes cinematicFloat {
                         0%, 100% { transform: translateY(0px); }
                         50% { transform: translateY(-8px); }
                     }
-
-                    /* Delicate gold glimmer shimmer tracking */
                     @keyframes pureSparkle {
                         0%, 100% { filter: brightness(1); }
                         50% { filter: brightness(1.2); }
                     }
-
                     .floating-title-block {
                         animation: cinematicFloat 5s ease-in-out infinite, pureSparkle 6s ease-in-out infinite;
                     }
-
-                    /* Continue text flashing rhythm pulse */
                     @keyframes promptPulse {
                         0%, 100% { opacity: 0.35; transform: scale(1); }
                         50% { opacity: 0.85; transform: scale(1.02); }
@@ -93,7 +87,6 @@ export const WelcomePage = {
                 </div>
 
                 <div class="floating-title-block" style="position: relative; z-index: 5; margin-top: auto; margin-bottom: auto;">
-                    
                     <h1 style="
                         font-family: 'Viaoda Libre', serif; 
                         font-size: 3.6rem; 
@@ -105,7 +98,6 @@ export const WelcomePage = {
                     ">
                         Welcome to Marleyan
                     </h1>
-                    
                     <h2 style="
                         font-family: 'Viaoda Libre', serif;
                         font-size: 1.6rem; 
@@ -120,7 +112,7 @@ export const WelcomePage = {
                 </div>
 
                 <div style="position: relative; z-index: 5; margin-bottom: 32px;">
-                    <p style="
+                    <p class="silk-pulse-prompt" style="
                         font-family: 'Cinzel', serif;
                         font-size: 0.85rem; 
                         color: #AA7C11; 
@@ -136,16 +128,24 @@ export const WelcomePage = {
             </div>
         `;
     },
-    
+
     init() {
         const welcomeLayer = document.getElementById('page-welcome');
-        
-        // RAIN DROP FLUID MATRIX LOGIC ENGINE
+
+        // Settings gear — isolated from the "click anywhere" transition
+        document.getElementById('welcome-gear').addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.silkAudio.playClick();
+            window.silkSettingsUI.open();
+        });
+
+        // RAIN DROP FLUID MATRIX LOGIC ENGINE (reduce-motion aware)
         const canvas = document.getElementById('welcome-rain-canvas');
         const ctx = canvas.getContext('2d');
         let rainDropsArray = [];
-        const maximumDropsCeiling = 60; 
+        const maximumDropsCeiling = 60;
         let rainAnimationFrameId = null;
+        let rainRunning = false;
 
         function resizeRainCanvas() {
             canvas.width = window.innerWidth;
@@ -165,10 +165,10 @@ export const WelcomePage = {
         }
 
         function renderRainTick() {
+            if (!rainRunning) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = 'rgba(181, 146, 75, 0.18)';
             ctx.linecap = 'round';
-
             for (let i = 0; i < rainDropsArray.length; i++) {
                 let p = rainDropsArray[i];
                 ctx.lineWidth = p.weight;
@@ -176,7 +176,6 @@ export const WelcomePage = {
                 ctx.moveTo(p.x, p.y);
                 ctx.lineTo(p.x + (p.speed * 0.05), p.y + p.length);
                 ctx.stroke();
-
                 p.y += p.speed;
                 if (p.y > canvas.height) {
                     p.x = Math.random() * canvas.width;
@@ -186,23 +185,28 @@ export const WelcomePage = {
             }
             rainAnimationFrameId = requestAnimationFrame(renderRainTick);
         }
-        renderRainTick();
+
+        const startRain = () => { if (rainRunning) return; rainRunning = true; renderRainTick(); };
+        const stopRain = () => { rainRunning = false; if (rainAnimationFrameId) cancelAnimationFrame(rainAnimationFrameId); rainAnimationFrameId = null; };
+        const onSettingsChange = () => {
+            const rm = window.silkSettings && window.silkSettings.get().reducedMotion;
+            if (rm) stopRain(); else startRain();
+        };
+        if (!(window.silkSettings && window.silkSettings.get().reducedMotion)) startRain();
+        window.addEventListener('silksettingschange', onSettingsChange);
 
         // SCENE STATE CHANGE LEAP SELECTION INTERFACES
         welcomeLayer.addEventListener('click', function() {
             window.silkAudio.fadeInMusic();
-            
-            cancelAnimationFrame(rainAnimationFrameId);
+            stopRain();
+            window.removeEventListener('silksettingschange', onSettingsChange);
             window.removeEventListener('resize', resizeRainCanvas);
-            
             welcomeLayer.style.transform = "scale(1.06)";
             welcomeLayer.style.opacity = "0";
             welcomeLayer.style.pointerEvents = "none";
-            
             setTimeout(() => {
                 welcomeLayer.classList.add('hidden');
                 welcomeLayer.remove();
-                
                 const viewport = document.getElementById('app-viewport');
                 viewport.innerHTML = MenuPage.render();
                 MenuPage.init();
