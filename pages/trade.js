@@ -1,32 +1,31 @@
-// pages/trade.js — S.I.L.K. Trade Bulletin Board. Identity via Discord OAuth2, storage in Atlas.
+// pages/trade.js — S.I.L.K. Trade Bulletin Board. Identity via bot-issued password login.
 let _busy = false;
 let _user = null, _token = null;
 let _tab = 'open';
 let _ticker = null;
 const PRESETS = [1, 3, 6, 12, 24, 48, 72];
+const STORE_KEY = 'silk_trade_session';
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const KEY_ICON = `<img class="tb-cur-icon" src="./assets/Key.webp" alt="" onerror="this.style.display='none'">`;
 const fmtInt = (n) => { const x = Number(n) || 0; return Number.isInteger(x) ? x.toLocaleString('en-US') : x.toLocaleString('en-US', { maximumFractionDigits: 2 }); };
 
 function sessionLoad() {
   try {
-    const raw = sessionStorage.getItem('silk_identity');
+    const raw = localStorage.getItem(STORE_KEY);
     if (raw) { const p = JSON.parse(raw); _user = p.user || null; _token = p.token || null; }
   } catch { /* storage unavailable */ }
 }
 function sessionSave() {
   try {
-    if (_user && _token) sessionStorage.setItem('silk_identity', JSON.stringify({ user: _user, token: _token }));
-    else sessionStorage.removeItem('silk_identity');
+    if (_user && _token) localStorage.setItem(STORE_KEY, JSON.stringify({ user: _user, token: _token }));
+    else localStorage.removeItem(STORE_KEY);
   } catch { /* ignore */ }
 }
 function avatarUrl(u) {
-  if (!u) return null;
-  if (u.sellerAvatar || u.avatar) {
-    const hash = u.sellerAvatar || u.avatar;
-    return `https://cdn.discordapp.com/avatars/${u.id || u.sellerId}/${hash}.png?size=64`;
-  }
-  try { const idx = (BigInt(u.id || u.sellerId) >> 22n) % 6n; return `https://cdn.discordapp.com/embed/avatars/${idx}.png`; }
+  const direct = u.avatar || u.sellerAvatar;
+  if (direct) return direct;
+  const id = u.id || u.sellerId;
+  try { const idx = (BigInt(id) >> 22n) % 6n; return `https://cdn.discordapp.com/embed/avatars/${idx}.png`; }
   catch { return null; }
 }
 async function copyText(t) {
@@ -87,12 +86,13 @@ export const TradePage = {
         .tb-back-btn{ flex:0 0 auto; cursor:pointer; background:rgba(0,0,0,.4); border:1px solid rgba(212,175,55,.35);
           color:#E5C158; padding:6px 12px; border-radius:6px; font-size:.76rem; letter-spacing:1px; transition:all .2s; }
         .tb-back-btn:hover{ background:rgba(212,175,55,.12); border-color:#E5C158; }
-        .tb-idchip{ flex:0 0 auto; display:inline-flex; align-items:center; gap:7px; max-width:170px;
-          background:rgba(0,0,0,.4); border:1px solid rgba(212,175,55,.3); border-radius:999px; padding:4px 10px 4px 4px; }
+        .tb-idchip{ flex:0 0 auto; display:inline-flex; align-items:center; gap:7px; max-width:180px; cursor:pointer;
+          background:rgba(0,0,0,.4); border:1px solid rgba(212,175,55,.3); border-radius:999px; padding:4px 10px 4px 4px; transition:all .2s; }
+        .tb-idchip:hover{ border-color:#E5C158; }
         .tb-idchip img{ width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid rgba(212,175,55,.4); }
         .tb-idchip span{ color:#F7FAFC; font-size:.74rem; letter-spacing:.4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .tb-idchip.connect{ cursor:pointer; color:#E5C158; padding:6px 12px; font-size:.72rem; letter-spacing:1px; transition:all .2s; }
-        .tb-idchip.connect:hover{ border-color:#E5C158; background:rgba(212,175,55,.12); }
+        .tb-idchip.connect{ padding:6px 12px; color:#E5C158; font-size:.72rem; letter-spacing:1px; }
+        .tb-idchip.connect:hover{ background:rgba(212,175,55,.12); }
 
         #trade-body{ z-index:3; position:relative; flex:1; display:flex; flex-direction:column; overflow:hidden; color:#F7FAFC; }
 
@@ -160,12 +160,14 @@ export const TradePage = {
         .tb-state{ height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; padding:16px; }
         .tb-state-icon{ font-size:2.4rem; opacity:.85; }
         .tb-state-title{ font-family:'Viaoda Libre',serif; color:#E5C158; letter-spacing:2px; font-size:1.05rem; }
-        .tb-state-msg{ color:rgba(247,250,252,.55); font-size:.8rem; max-width:360px; line-height:1.5; }
+        .tb-state-msg{ color:rgba(247,250,252,.55); font-size:.8rem; max-width:380px; line-height:1.5; }
+        .tb-state-btn{ cursor:pointer; padding:8px 18px; border-radius:6px; font-size:.78rem; letter-spacing:1px;
+          background:linear-gradient(135deg,#D4AF37,#AA7C11); border:none; color:#050404; font-weight:700; }
         .tb-sk{ height:86px; border-radius:10px; border:1px solid rgba(212,175,55,.15);
           background:linear-gradient(90deg, rgba(212,175,55,.04) 25%, rgba(212,175,55,.1) 50%, rgba(212,175,55,.04) 75%);
           background-size:200% 100%; animation:tbShimmer 1.4s infinite; }
 
-        /* ---- composer modal ---- */
+        /* ---- modals ---- */
         .tb-modal{ position:absolute; inset:0; z-index:40; background:rgba(0,0,0,.78); backdrop-filter:blur(5px);
           display:flex; align-items:center; justify-content:center; }
         .tb-modal-card{ width:min(92%, 560px); max-height:92%; overflow-y:auto; border-radius:12px;
@@ -178,6 +180,9 @@ export const TradePage = {
           border:1px solid rgba(212,175,55,.3); border-radius:6px; color:#fff; font-size:.84rem; outline:none;
           font-family:inherit; resize:vertical; transition:all .3s; }
         .tb-field input:focus, .tb-field textarea:focus{ border-color:#E5C158; box-shadow:0 0 10px rgba(229,193,88,.2); }
+        .tb-login-note{ margin-top:12px; padding:9px 12px; border:1px dashed rgba(212,175,55,.3); border-radius:8px;
+          color:rgba(247,250,252,.55); font-size:.7rem; line-height:1.5; }
+        .tb-login-note code{ color:#E5C158; background:rgba(0,0,0,.4); padding:1px 5px; border-radius:4px; }
         .tb-preview{ min-height:26px; margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
         .tb-presets{ display:flex; gap:8px; overflow-x:auto; padding:2px 2px 6px; }
         .tb-presets::-webkit-scrollbar{ height:4px; } .tb-presets::-webkit-scrollbar-thumb{ background:rgba(212,175,55,.4); border-radius:2px; }
@@ -187,12 +192,12 @@ export const TradePage = {
         .tb-counter{ font-size:.64rem; color:rgba(247,250,252,.4); text-align:right; margin-top:3px; }
         .tb-modal-err{ min-height:16px; color:#E74C3C; font-size:.72rem; margin-top:8px; }
         .tb-modal-actions{ display:flex; gap:10px; margin-top:12px; }
-        .tb-modal-actions #tb-publish{ flex:1; cursor:pointer; padding:10px; border:none; border-radius:6px; font-weight:700;
+        .tb-modal-actions .tb-primary{ flex:1; cursor:pointer; padding:10px; border:none; border-radius:6px; font-weight:700;
           letter-spacing:1px; font-size:.84rem; color:#050404; background:linear-gradient(135deg,#D4AF37,#AA7C11); transition:filter .2s, opacity .2s; }
-        .tb-modal-actions #tb-publish:disabled{ opacity:.6; cursor:not-allowed; }
-        .tb-modal-actions #tb-cancel{ cursor:pointer; padding:10px 16px; border-radius:6px; background:none;
+        .tb-modal-actions .tb-primary:disabled{ opacity:.6; cursor:not-allowed; }
+        .tb-modal-actions .tb-ghost{ cursor:pointer; padding:10px 16px; border-radius:6px; background:none;
           border:1px solid rgba(212,175,55,.3); color:rgba(247,250,252,.6); font-size:.8rem; letter-spacing:1px; }
-        .tb-modal-actions #tb-cancel:hover{ border-color:#E5C158; color:#E5C158; }
+        .tb-modal-actions .tb-ghost:hover{ border-color:#E5C158; color:#E5C158; }
       </style>
 
       <div id="page-trade" class="page-layer" style="opacity:0; transition:opacity .5s ease-in-out; width:100%; height:100vh; position:relative; background-color:#000; overflow:hidden; display:flex; justify-content:center; align-items:center;">
@@ -250,69 +255,107 @@ export const TradePage = {
     const qInput = document.getElementById('tb-q');
     const sortSel = document.getElementById('tb-sort');
     const filtersRow = document.getElementById('tb-filters');
-
-    const guildId = (window.discordSdk && window.discordSdk.guildId) ? window.discordSdk.guildId : null;
+    const panel = document.getElementById('tb-panel');
 
     const renderIdChip = () => {
       if (_user) {
         const url = avatarUrl(_user);
-        idslot.innerHTML = `<div class="tb-idchip" title="${esc(_user.globalName || _user.username)}">
+        idslot.innerHTML = `<div class="tb-idchip" id="tb-chip" title="Click to log out">
           <img src="/api/image?url=${encodeURIComponent(url)}" alt="" onerror="this.style.visibility='hidden'">
           <span>${esc(_user.globalName || _user.username)}</span></div>`;
+        const chip = document.getElementById('tb-chip');
+        chip.addEventListener('click', () => {
+          if (chip.dataset.armed !== '1') {
+            chip.dataset.armed = '1';
+            chip.querySelector('span').textContent = 'LOG OUT?';
+            setTimeout(() => { if (chip.dataset.armed === '1') { chip.dataset.armed = '0'; chip.querySelector('span').textContent = _user.globalName || _user.username; } }, 2500);
+            return;
+          }
+          _user = null; _token = null; sessionSave(); renderIdChip();
+          if (_tab === 'mine') load();
+        });
       } else {
-        idslot.innerHTML = `<button class="tb-idchip connect" id="tb-connect" type="button">⚡ CONNECT</button>`;
-        document.getElementById('tb-connect').addEventListener('click', () => connect());
+        idslot.innerHTML = `<button class="tb-idchip connect" id="tb-login-btn" type="button">🔑 LOGIN</button>`;
+        document.getElementById('tb-login-btn').addEventListener('click', () => openLoginModal());
       }
     };
 
-    const connect = async () => {
-      if (_busy) return null;
-      if (!window.discordSdk) { alert2('Discord SDK unavailable — open the activity inside Discord.'); return null; }
-      _busy = true;
-      const slot = document.getElementById('tb-connect'); if (slot) slot.textContent = '…';
-      try {
-        const auth = await window.discordSdk.commands.authorize({
-          client_id: window.discordSdk.clientId,
-          response_type: 'code',
-          state: '',
-          scope: 'identify'
-        });
-        const res = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: auth.code }) });
-        if (!res.ok) throw new Error('auth_failed');
-        const data = await res.json();
-        _user = data.user; _token = data.token; sessionSave();
-        renderIdChip();
-        return _user;
-      } catch (e) {
-        alert2('Connection failed — consent was cancelled or the auth backend errored.');
-        renderIdChip();
-        return null;
-      } finally { _busy = false; }
+    const openLoginModal = (onSuccess) => {
+      const modal = document.createElement('div');
+      modal.className = 'tb-modal';
+      modal.innerHTML = `
+        <div class="tb-modal-card">
+          <div class="tb-modal-title">🔑 TRADER LOGIN</div>
+          <div class="tb-field">
+            <label>DISCORD USERNAME</label>
+            <input id="tb-l-user" type="text" autocomplete="off" placeholder="your_username" />
+          </div>
+          <div class="tb-field">
+            <label>PASSWORD</label>
+            <input id="tb-l-pass" type="password" placeholder="••••••••" />
+          </div>
+          <div class="tb-login-note">New here? Create your account first — run <code>/activity set-password</code> on the S.I.L.K. bot in the server, then come back and log in.</div>
+          <div class="tb-modal-err" id="tb-l-err"></div>
+          <div class="tb-modal-actions">
+            <button class="tb-ghost" id="tb-l-cancel" type="button">CANCEL</button>
+            <button class="tb-primary" id="tb-l-submit" type="button">LOGIN</button>
+          </div>
+        </div>`;
+      panel.appendChild(modal);
+      const err = modal.querySelector('#tb-l-err');
+      const uIn = modal.querySelector('#tb-l-user');
+      const pIn = modal.querySelector('#tb-l-pass');
+      modal.querySelector('#tb-l-cancel').addEventListener('click', () => modal.remove());
+      const submit = async () => {
+        err.textContent = '';
+        const username = uIn.value.trim(), password = pIn.value;
+        if (!username || !password) { err.textContent = 'Enter your username and password.'; return; }
+        const btn = modal.querySelector('#tb-l-submit');
+        btn.disabled = true; btn.textContent = '…';
+        try {
+          const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+          const d = await res.json();
+          if (!res.ok) {
+            if (d.error === 'no_account') throw new Error('No account found. Set one up with /activity set-password on the bot.');
+            if (d.error === 'bad_password') throw new Error('Wrong password. Try again.');
+            throw new Error(d.error || 'Login failed.');
+          }
+          _user = d.user; _token = d.token; sessionSave();
+          modal.remove();
+          renderIdChip();
+          if (_tab === 'mine') load();
+          if (onSuccess) onSuccess();
+        } catch (e) {
+          err.textContent = String(e.message);
+          btn.disabled = false; btn.textContent = 'LOGIN';
+        }
+      };
+      modal.querySelector('#tb-l-submit').addEventListener('click', submit);
+      pIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+      uIn.focus();
     };
-
-    function alert2(msg) {
-      list.innerHTML = `<div class="tb-state"><div class="tb-state-icon">⚠️</div><div class="tb-state-title">NOTICE</div><div class="tb-state-msg">${esc(msg)}</div></div>`;
-    }
 
     const load = async () => {
       refreshBtn.classList.add('spin');
       list.innerHTML = `<div class="tb-sk"></div><div class="tb-sk"></div><div class="tb-sk"></div>`;
       try {
         const params = new URLSearchParams();
-        if (guildId) params.set('guildId', guildId);
         if (_tab === 'open') {
           const q = qInput.value.trim(); if (q) params.set('q', q);
           params.set('sort', sortSel.value);
         } else {
-          if (!_user) { renderIdChip(); list.innerHTML = `<div class="tb-state"><div class="tb-state-icon">⚡</div><div class="tb-state-title">CONNECT TO MANAGE ADS</div><div class="tb-state-msg">Your posted ads and their controls appear here once you connect your Discord identity.</div></div>`; return; }
+          if (!_user) {
+            list.innerHTML = `<div class="tb-state"><div class="tb-state-icon">🔑</div><div class="tb-state-title">LOGIN TO MANAGE ADS</div><div class="tb-state-msg">Your posted ads and their controls appear here once you log in. No account yet? Use /activity set-password on the bot.</div><button class="tb-state-btn" id="tb-state-login" type="button">🔑 LOGIN</button></div>`;
+            document.getElementById('tb-state-login').addEventListener('click', () => openLoginModal(() => load()));
+            return;
+          }
           params.set('seller', _user.id);
         }
         const res = await fetch(`/api/trade?${params.toString()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         document.getElementById('tb-open-count').textContent = data.openCount != null ? `(${data.openCount})` : '';
-        if (data.myCount != null) document.getElementById('tb-my-count').textContent = `(${data.myCount})`;
-        if (_tab === 'mine' && _user) document.getElementById('tb-my-count').textContent = `(${data.ads.filter(a => a.status === 'open' && !a.expired).length})`;
+        if (_tab === 'mine') document.getElementById('tb-my-count').textContent = `(${data.ads.filter(a => a.status === 'open' && !a.expired).length})`;
         if (!data.ads.length) {
           list.innerHTML = _tab === 'open'
             ? `<div class="tb-state"><div class="tb-state-icon">📜</div><div class="tb-state-title">BOARD IS EMPTY</div><div class="tb-state-msg">No open ads match. Be the first — hit ＋ POST AD and set your offer live.</div></div>`
@@ -338,7 +381,7 @@ export const TradePage = {
       const seek = `<div class="tb-seek"><span class="tb-lbl">SEEKING</span> ${esc(a.seekingRaw)} ${seekBadge}</div>`;
       const note = a.note ? `<div class="tb-note">“${esc(a.note)}”</div>` : '';
       let foot = `<span>${timeAgo(a.createdAt)}</span>
-        <button class="tb-mini-btn" data-act="copy" data-name="${esc(a.sellerName)}" type="button">⧉ COPY USERNAME</button>`;
+        <button class="tb-mini-btn" data-act="copy" data-name="${esc(a.sellerUsername)}" type="button">⧉ COPY USERNAME</button>`;
       if (_tab === 'mine' && _user) {
         const st = a.expired ? 'EXPIRED' : (a.status === 'open' ? 'OPEN' : 'CLOSED');
         const stCls = a.expired ? 'closed' : a.status;
@@ -374,7 +417,7 @@ export const TradePage = {
 
     const authedFetch = async (url, opts) => {
       const res = await fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${_token}` } });
-      if (res.status === 401) { _user = null; _token = null; sessionSave(); renderIdChip(); throw new Error('Session expired — reconnect.'); }
+      if (res.status === 401) { _user = null; _token = null; sessionSave(); renderIdChip(); throw new Error('Session expired — log in again.'); }
       return res;
     };
 
@@ -404,15 +447,15 @@ export const TradePage = {
               const d = await res.json(); if (!res.ok) throw new Error(d.error);
             }
             load();
-          } catch (e) { alert2(String(e.message)); }
-          finally { btn.disabled = false; }
+          } catch (e) {
+            list.insertAdjacentHTML('afterbegin', `<div class="tb-state-msg" style="color:#E74C3C; text-align:center;">${esc(String(e.message))}</div>`);
+          } finally { btn.disabled = false; }
         });
       });
     };
 
     // ---- composer ----
     const openComposer = () => {
-      const panel = document.getElementById('tb-panel');
       const modal = document.createElement('div');
       modal.className = 'tb-modal';
       modal.innerHTML = `
@@ -434,13 +477,13 @@ export const TradePage = {
           </div>
           <div class="tb-field">
             <label>✉️ PS NOTE (optional)</label>
-            <textarea id="tb-c-note" rows="2" maxlength="140" placeholder="e.g. DM me, or ping in #trades. WTS only, no splits."></textarea>
+            <textarea id="tb-c-note" rows="2" maxlength="140" placeholder="e.g. DM me, or ping me in #trades. WTS only, no splits."></textarea>
             <div class="tb-counter"><span id="tb-c-note-n">0</span>/140</div>
           </div>
           <div class="tb-modal-err" id="tb-c-err"></div>
           <div class="tb-modal-actions">
-            <button id="tb-cancel" type="button">CANCEL</button>
-            <button id="tb-publish" type="button">PUBLISH AD</button>
+            <button class="tb-ghost" id="tb-cancel" type="button">CANCEL</button>
+            <button class="tb-primary" id="tb-publish" type="button">PUBLISH AD</button>
           </div>
         </div>`;
       panel.appendChild(modal);
@@ -451,7 +494,7 @@ export const TradePage = {
       const noteIn = modal.querySelector('#tb-c-note');
       const err = modal.querySelector('#tb-c-err');
 
-      const parsePreview = async (input, target, wantBadge) => {
+      const parsePreview = async (input, target) => {
         const t = input.value.trim();
         const box = modal.querySelector(target);
         if (!t) { box.innerHTML = ''; return; }
@@ -460,12 +503,12 @@ export const TradePage = {
           const d = await res.json();
           if (!d.items || !d.items.length) { box.innerHTML = ''; return; }
           box.innerHTML = d.items.map(i => `<span class="tb-chip${i.ok ? '' : ' bad'}">${esc(i.name)}</span>`).join('')
-            + (wantBadge && d.anyOk ? `<span class="tb-val-badge" style="margin-left:0;">${KEY_ICON}≈ ${fmtInt(d.totalKeys)} Keys</span>` : '');
+            + (d.anyOk ? `<span class="tb-val-badge" style="margin-left:0;">${KEY_ICON}≈ ${fmtInt(d.totalKeys)} Keys</span>` : '');
         } catch { /* preview is best-effort */ }
       };
       let t1, t2;
-      offerIn.addEventListener('input', () => { clearTimeout(t1); t1 = setTimeout(() => parsePreview(offerIn, '#tb-c-offer-prev', true), 400); });
-      seekIn.addEventListener('input', () => { clearTimeout(t2); t2 = setTimeout(() => parsePreview(seekIn, '#tb-c-seek-prev', true), 400); });
+      offerIn.addEventListener('input', () => { clearTimeout(t1); t1 = setTimeout(() => parsePreview(offerIn, '#tb-c-offer-prev'), 400); });
+      seekIn.addEventListener('input', () => { clearTimeout(t2); t2 = setTimeout(() => parsePreview(seekIn, '#tb-c-seek-prev'), 400); });
       noteIn.addEventListener('input', () => { modal.querySelector('#tb-c-note-n').textContent = String(noteIn.value.length); });
 
       modal.querySelectorAll('.tb-preset').forEach(p => p.addEventListener('click', () => {
@@ -483,7 +526,7 @@ export const TradePage = {
         try {
           const res = await authedFetch('/api/trade', {
             method: 'POST',
-            body: JSON.stringify({ offering, seeking, note: noteIn.value.trim(), hours, guildId })
+            body: JSON.stringify({ offering, seeking, note: noteIn.value.trim(), hours })
           });
           const d = await res.json();
           if (!res.ok) throw new Error(d.error || 'publish_failed');
@@ -497,10 +540,9 @@ export const TradePage = {
       });
     };
 
-    postBtn.addEventListener('click', async () => {
-      let u = _user;
-      if (!u) { u = await connect(); if (!u) return; }
-      openComposer();
+    postBtn.addEventListener('click', () => {
+      if (!_user) openLoginModal(() => openComposer());
+      else openComposer();
     });
 
     const syncTabs = () => {
