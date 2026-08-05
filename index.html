@@ -16,6 +16,40 @@
         .page-layer { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s ease-in-out; opacity: 1; }
         .page-layer.fade-out { opacity: 0; pointer-events: none; }
         .hidden { display: none !important; }
+
+        /* ---- Reduce Motion: one class pauses every decorative animation app-wide ---- */
+        body.silk-reduced-motion video,
+        body.silk-reduced-motion #welcome-rain-canvas { display: none !important; }
+        body.silk-reduced-motion .floating-title-block,
+        body.silk-reduced-motion .silk-pulse-prompt { animation: none !important; }
+
+        /* ---- Shared gear button (Welcome + Menu) ---- */
+        .silk-gear-btn {
+            position: absolute; top: 14px; right: 14px; z-index: 12;
+            width: 34px; height: 34px; border-radius: 50%;
+            background: rgba(0,0,0,.45); border: 1px solid rgba(212,175,55,.35);
+            color: #E5C158; font-size: 1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .2s; -webkit-tap-highlight-color: transparent;
+        }
+        .silk-gear-btn:hover { border-color: #E5C158; background: rgba(212,175,55,.15); transform: rotate(30deg); }
+
+        /* ---- Settings drawer ---- */
+        #silk-settings-modal { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
+        .ss-card { width: min(92%, 420px); border-radius: 12px; border: 1px solid rgba(212,175,55,.4);
+            background: linear-gradient(160deg, rgba(10,8,5,.98), rgba(0,0,0,.99));
+            box-shadow: 0 30px 60px rgba(0,0,0,.9); padding: 18px 20px; color: #F7FAFC; }
+        .ss-title { font-family: 'Viaoda Libre', serif; color: #E5C158; letter-spacing: 2px; text-align: center; margin-bottom: 14px; }
+        .ss-row { margin-bottom: 14px; }
+        .ss-label { display: flex; justify-content: space-between; font-size: .66rem; letter-spacing: 1.4px; color: rgba(229,193,88,.75); margin-bottom: 6px; }
+        .ss-row input[type=range] { width: 100%; accent-color: #D4AF37; cursor: pointer; }
+        .ss-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: .72rem; letter-spacing: .8px; color: rgba(247,250,252,.8); margin-bottom: 10px; cursor: pointer; }
+        .ss-toggle input { accent-color: #D4AF37; width: 16px; height: 16px; cursor: pointer; flex: 0 0 auto; }
+        .ss-actions { display: flex; gap: 10px; margin-top: 14px; }
+        .ss-actions button { cursor: pointer; border-radius: 6px; font-size: .76rem; letter-spacing: 1px; padding: 9px 12px; }
+        #ss-reset { flex: 1; background: none; border: 1px solid rgba(212,175,55,.3); color: rgba(247,250,252,.6); }
+        #ss-reset:hover { border-color: #E5C158; color: #E5C158; }
+        #ss-close { flex: 1; background: linear-gradient(135deg,#D4AF37,#AA7C11); border: none; color: #050404; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -25,11 +59,12 @@
     <script type="module">
         import { WelcomePage } from './pages/welcome.js';
 
-        // Advanced Web Audio API Engine
+        // Advanced Web Audio API Engine (settings-aware)
         window.silkAudio = {
             bgMusic: new Audio('./assets/bg-music.ogg'),
             clickSfx: new Audio('./assets/click-sfx.ogg'),
             audioCtx: null, filterNode: null, isGraphConnected: false,
+            _fadeRunning: false,
             init() {
                 this.bgMusic.loop = true; this.bgMusic.volume = 0;
                 this.bgMusic.preload = 'auto'; this.clickSfx.preload = 'auto';
@@ -38,6 +73,20 @@
                     this.bgMusic.currentTime = 0;
                     this.bgMusic.play().catch(e => console.log("Audio loop skip."));
                 });
+            },
+            musicTarget() {
+                const s = window.silkSettings ? window.silkSettings.get() : null;
+                if (!s || s.muted) return 0;
+                return (s.music / 100) * 0.25;
+            },
+            sfxLevel() {
+                const s = window.silkSettings ? window.silkSettings.get() : null;
+                if (!s || s.muted) return 0;
+                return s.sfx / 100;
+            },
+            applySettings() {
+                this.clickSfx.volume = this.sfxLevel();
+                if (!this._fadeRunning) this.bgMusic.volume = this.musicTarget();
             },
             fadeInMusic() {
                 if (!this.isGraphConnected) {
@@ -53,13 +102,27 @@
                 }
                 if (this.audioCtx && this.audioCtx.state === 'suspended') this.audioCtx.resume();
                 this.bgMusic.play().catch(e => console.log("Audio bypass active."));
-                let vol = 0; const targetMaxVolume = 0.18;
+                this._fadeRunning = true;
+                let vol = 0;
+                this.bgMusic.volume = 0;
                 const fadeInterval = setInterval(() => {
-                    if (vol < targetMaxVolume) { vol += 0.02; this.bgMusic.volume = parseFloat(vol.toFixed(2)); }
-                    else { clearInterval(fadeInterval); }
+                    const target = this.musicTarget();
+                    if (vol < target) {
+                        vol = Math.min(target, vol + 0.02);
+                        this.bgMusic.volume = parseFloat(vol.toFixed(2));
+                    } else {
+                        this.bgMusic.volume = target;
+                        this._fadeRunning = false;
+                        clearInterval(fadeInterval);
+                    }
                 }, 120);
             },
-            playClick() { this.clickSfx.currentTime = 0; this.clickSfx.play().catch(e => console.log("SFX click tracked.")); }
+            playClick() {
+                const v = this.sfxLevel();
+                if (v <= 0) return;
+                this.clickSfx.currentTime = 0; this.clickSfx.volume = v;
+                this.clickSfx.play().catch(e => console.log("SFX click tracked."));
+            }
         };
 
         // Background asset pre-caching engine
@@ -85,11 +148,83 @@
             }
         };
 
+        // Persistent user settings (volume, mute, reduce motion)
+        window.silkSettings = {
+            defaults: { music: 70, sfx: 50, muted: false, reducedMotion: false },
+            data: null,
+            load() {
+                try {
+                    const raw = localStorage.getItem('silk_settings_v1');
+                    this.data = raw ? { ...this.defaults, ...JSON.parse(raw) } : { ...this.defaults };
+                } catch { this.data = { ...this.defaults }; }
+                return this.data;
+            },
+            save() { try { localStorage.setItem('silk_settings_v1', JSON.stringify(this.data)); } catch { /* ignore */ } },
+            get() { return this.data; },
+            set(patch) { Object.assign(this.data, patch); this.save(); this.apply(); },
+            reset() { this.data = { ...this.defaults }; this.save(); this.apply(); },
+            apply() {
+                if (window.silkAudio) window.silkAudio.applySettings();
+                document.body.classList.toggle('silk-reduced-motion', !!this.data.reducedMotion);
+                window.dispatchEvent(new CustomEvent('silksettingschange'));
+            }
+        };
+
+        // Shared settings drawer UI (opened by the gear on Welcome & Menu)
+        window.silkSettingsUI = {
+            open() {
+                if (document.getElementById('silk-settings-modal')) return;
+                const m = document.createElement('div');
+                m.id = 'silk-settings-modal';
+                m.innerHTML = `
+                    <div class="ss-card">
+                        <div class="ss-title">⚙ SETTINGS</div>
+                        <div class="ss-row">
+                            <div class="ss-label"><span>🎵 MUSIC VOLUME</span><span id="ss-music-val"></span></div>
+                            <input id="ss-music" type="range" min="0" max="100" step="1" />
+                        </div>
+                        <div class="ss-row">
+                            <div class="ss-label"><span>🔉 SOUND EFFECTS</span><span id="ss-sfx-val"></span></div>
+                            <input id="ss-sfx" type="range" min="0" max="100" step="1" />
+                        </div>
+                        <label class="ss-toggle"><span>🔇 MUTE EVERYTHING</span><input id="ss-mute" type="checkbox" /></label>
+                        <label class="ss-toggle"><span>🍃 REDUCE MOTION (rain & background videos)</span><input id="ss-motion" type="checkbox" /></label>
+                        <div class="ss-actions">
+                            <button id="ss-reset" type="button">RESET DEFAULTS</button>
+                            <button id="ss-close" type="button">CLOSE</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(m);
+                const music = m.querySelector('#ss-music');
+                const sfx = m.querySelector('#ss-sfx');
+                const mute = m.querySelector('#ss-mute');
+                const motion = m.querySelector('#ss-motion');
+                const musicVal = m.querySelector('#ss-music-val');
+                const sfxVal = m.querySelector('#ss-sfx-val');
+                const sync = () => {
+                    const s = window.silkSettings.get();
+                    music.value = s.music; sfx.value = s.sfx;
+                    mute.checked = !!s.muted; motion.checked = !!s.reducedMotion;
+                    musicVal.textContent = s.music + '%'; sfxVal.textContent = s.sfx + '%';
+                };
+                sync();
+                music.addEventListener('input', () => { window.silkSettings.set({ music: Number(music.value) }); musicVal.textContent = music.value + '%'; });
+                sfx.addEventListener('input', () => { window.silkSettings.set({ sfx: Number(sfx.value) }); sfxVal.textContent = sfx.value + '%'; });
+                mute.addEventListener('change', () => window.silkSettings.set({ muted: mute.checked }));
+                motion.addEventListener('change', () => window.silkSettings.set({ reducedMotion: motion.checked }));
+                m.querySelector('#ss-reset').addEventListener('click', () => { window.silkSettings.reset(); sync(); });
+                m.querySelector('#ss-close').addEventListener('click', () => m.remove());
+                m.addEventListener('click', (e) => { if (e.target === m) m.remove(); });
+            }
+        };
+
+        // Run system initializations
         window.silkAudio.init();
         window.silkPreloader.start();
+        window.silkSettings.load();
+        window.silkSettings.apply();
 
         // Identity is handled by the bot-issued password login (api/login.js).
-        // No Discord SDK needed anymore.
         async function bootActivity() {
             document.getElementById('app-viewport').innerHTML = WelcomePage.render();
             WelcomePage.init();
