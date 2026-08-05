@@ -15,7 +15,7 @@ export const MenuPage = {
                 overflow: hidden;
                 display: flex;
             ">
-                
+
                 <video autoplay loop muted playsinline style="
                     position: absolute;
                     top: 0; left: 0;
@@ -27,6 +27,8 @@ export const MenuPage = {
                 ">
                     <source src="./assets/menu_bg_video.mp4" type="video/mp4" />
                 </video>
+
+                <button id="menu-gear" class="silk-gear-btn" type="button" title="Settings">⚙</button>
 
                 <div style="
                     position: absolute;
@@ -88,6 +90,12 @@ export const MenuPage = {
     init() {
         const menuLayer = document.getElementById('page-menu');
         setTimeout(() => { menuLayer.style.opacity = "1"; }, 50);
+
+        document.getElementById('menu-gear').addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.silkAudio.playClick();
+            window.silkSettingsUI.open();
+        });
 
         document.getElementById('zone-values').addEventListener('click', function() {
             window.silkAudio.playClick();
