@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.I.L.K. Trading Center</title>
-    <script src="/.proxy/jsdelivr/npm/@discord/embedded-app-sdk@1.0.0/dist/index.js"></script>
+    <script type="importmap">
+        { "imports": { "zod": "./vendor/zod/index.mjs" } }
+    </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @font-face {
@@ -24,6 +26,7 @@
     <div id="app-viewport"></div>
 
     <script type="module">
+        import { DiscordSDK } from './vendor/embedded-app-sdk/index.mjs';
         import { WelcomePage } from './pages/welcome.js';
 
         // Advanced Web Audio API Engine
@@ -103,10 +106,8 @@
         window.silkPreloader.start();
 
         let discordSdk = null;
-        if (window.discord && window.discord.DiscordSDK) {
-            try { discordSdk = new window.discord.DiscordSDK("1468734164386971821"); } catch(e) {}
-        }
-        window.discordSdk = discordSdk; // Globally exposed for page modules (e.g., OAuth, guild scoping in pages/trade.js)
+        try { discordSdk = new DiscordSDK("1468734164386971821"); } catch(e) {}
+        window.discordSdk = discordSdk;
 
         async function bootActivity() {
             if (discordSdk) { try { await discordSdk.ready(); } catch(err) {} }
